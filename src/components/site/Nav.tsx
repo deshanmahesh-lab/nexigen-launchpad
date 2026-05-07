@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Menu, X, ArrowRight } from "lucide-react";
+import logo from "@/assets/nexigen-logo.png";
 
 const links = [
   { href: "#services", label: "Services" },
@@ -22,7 +23,7 @@ export function Nav() {
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "glass border-b" : "border-b border-transparent"}`}>
       <div className="mx-auto max-w-7xl px-6 h-16 flex items-center justify-between">
         <a href="#top" className="font-display font-bold text-xl tracking-tight">
-          <span className="text-gradient">NEXIGEN</span>
+          <img src={logo} alt="Nexigen" className="h-9 w-auto" />
         </a>
         <nav className="hidden md:flex items-center gap-8 text-sm">
           {links.map((l) => (
@@ -45,7 +46,7 @@ export function Nav() {
         <div onClick={() => setOpen(false)} className={`absolute inset-0 bg-black/60 transition-opacity ${open ? "opacity-100" : "opacity-0"}`} />
         <div className={`absolute top-0 right-0 h-full w-80 max-w-[85%] glass-strong border-l p-6 transition-transform duration-300 ${open ? "translate-x-0" : "translate-x-full"}`}>
           <div className="flex items-center justify-between mb-8">
-            <span className="font-display font-bold text-gradient">NEXIGEN</span>
+            <img src={logo} alt="Nexigen" className="h-8 w-auto" />
             <button aria-label="Close" onClick={() => setOpen(false)} className="p-2"><X className="h-5 w-5" /></button>
           </div>
           <div className="flex flex-col gap-4">
