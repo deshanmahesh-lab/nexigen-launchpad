@@ -1,3 +1,5 @@
+export type ItemStatus = "published" | "draft";
+
 export interface Service {
   id: string;
   title: string;
@@ -5,6 +7,8 @@ export interface Service {
   icon: string;
   span: string | null;
   order_index: number;
+  status: ItemStatus;
+  original_id: string | null;
 }
 
 export interface Project {
@@ -15,6 +19,8 @@ export interface Project {
   stack: string[];
   metric: string;
   gradient: string;
+  status: ItemStatus;
+  original_id: string | null;
 }
 
 export interface Testimonial {
@@ -23,6 +29,8 @@ export interface Testimonial {
   name: string;
   role: string;
   flag: string;
+  status: ItemStatus;
+  original_id: string | null;
 }
 
 export interface Stat {
@@ -30,6 +38,8 @@ export interface Stat {
   label: string;
   value: number;
   suffix: string;
+  status: ItemStatus;
+  original_id: string | null;
 }
 
 export interface SiteConfig {

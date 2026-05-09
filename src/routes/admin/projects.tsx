@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Pencil, Trash2, Plus } from "lucide-react";
+import { Pencil, Trash2, Plus, Rocket, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,18 +32,20 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { supabase } from "@/lib/supabase";
-import { fetchProjects } from "@/lib/queries";
+import { fetchProjectsAll } from "@/lib/queries";
 import type { Project } from "@/data/types";
+import { saveDraft, publishDraft, discardDraft, deleteItem, mergeAdminView } from "@/lib/draft-actions";
+import { StatusBadge } from "@/components/admin/StatusBadge";
 
 export const Route = createFileRoute("/admin/projects")({ component: ProjectsAdmin });
 
 function ProjectsAdmin() {
   const qc = useQueryClient();
-  const { data, isLoading } = useQuery({ queryKey: ["projects"], queryFn: fetchProjects });
+  const { data: allRows, isLoading } = useQuery({ queryKey: ["projects", "admin"], queryFn: fetchProjectsAll });
+  const data = allRows ? mergeAdminView(allRows) : undefined;
   const [editing, setEditing] = useState<Project | null>(null);
   const [open, setOpen] = useState(false);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
 
   const refresh = () => qc.invalidateQueries({ queryKey: ["projects"] });
 
@@ -58,26 +60,31 @@ function ProjectsAdmin() {
       metric: String(fd.get("metric") ?? ""),
       gradient: String(fd.get("gradient") ?? ""),
     };
-    if (editing) {
-      const { error } = await supabase.from("projects").update(payload).eq("id", editing.id);
-      if (error) return toast.error("Failed to update project");
-      toast.success("Project updated successfully");
-    } else {
-      const { error } = await supabase.from("projects").insert(payload);
-      if (error) return toast.error("Failed to add project");
-      toast.success("Project added successfully");
-    }
+    const { error } = await saveDraft("projects", payload, editing, allRows ?? []);
+    if (error) return toast.error("Failed to save draft");
+    toast.success(editing ? "Draft saved" : "Draft created");
     setOpen(false);
     setEditing(null);
     refresh();
   };
 
   const handleDelete = async () => {
-    if (!deleteId) return;
-    const { error } = await supabase.from("projects").delete().eq("id", deleteId);
+    if (!deleteTarget) return;
+    const { error } = await deleteItem("projects", deleteTarget);
     if (error) toast.error("Failed to delete project");
     else toast.success("Project deleted");
-    setDeleteId(null);
+    setDeleteTarget(null);
+    refresh();
+  };
+
+  const handlePublish = async (row: Project) => {
+    const { error } = await publishDraft("projects", row);
+    if (error) toast.error("Failed to publish"); else toast.success("Published live");
+    refresh();
+  };
+  const handleDiscard = async (row: Project) => {
+    const { error } = await discardDraft("projects", row);
+    if (error) toast.error("Failed to discard"); else toast.success("Draft discarded");
     refresh();
   };
 
@@ -86,7 +93,7 @@ function ProjectsAdmin() {
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl font-bold">Projects</h1>
-          <p className="mt-1 text-[color:var(--text-muted)]">Manage portfolio case studies.</p>
+          <p className="mt-1 text-[color:var(--text-muted)]">Edits create drafts. Use Publish to push them live.</p>
         </div>
         <Button className="bg-gradient-brand hover:opacity-90" onClick={() => { setEditing(null); setOpen(true); }}>
           <Plus className="h-4 w-4 mr-1" /> Add Project
@@ -98,32 +105,44 @@ function ProjectsAdmin() {
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
+              <TableHead className="w-24">Status</TableHead>
               <TableHead className="hidden md:table-cell">Category</TableHead>
               <TableHead className="hidden lg:table-cell">Metric</TableHead>
-              <TableHead className="w-28 text-right">Actions</TableHead>
+              <TableHead className="w-44 text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow><TableCell colSpan={4} className="text-center py-8 text-[color:var(--text-muted)]">Loading…</TableCell></TableRow>
+              <TableRow><TableCell colSpan={5} className="text-center py-8 text-[color:var(--text-muted)]">Loading…</TableCell></TableRow>
             ) : data?.length ? (
               data.map((p) => (
                 <TableRow key={p.id}>
                   <TableCell className="font-medium">{p.name}</TableCell>
+                  <TableCell><StatusBadge status={p.status} originalId={p.original_id} /></TableCell>
                   <TableCell className="hidden md:table-cell">{p.category}</TableCell>
                   <TableCell className="hidden lg:table-cell text-xs">{p.metric}</TableCell>
                   <TableCell className="text-right">
+                    {p.status === "draft" && (
+                      <>
+                        <Button variant="ghost" size="icon" title="Publish" onClick={() => handlePublish(p)}>
+                          <Rocket className="h-4 w-4 text-emerald-400" />
+                        </Button>
+                        <Button variant="ghost" size="icon" title="Discard draft" onClick={() => handleDiscard(p)}>
+                          <Undo2 className="h-4 w-4 text-amber-400" />
+                        </Button>
+                      </>
+                    )}
                     <Button variant="ghost" size="icon" onClick={() => { setEditing(p); setOpen(true); }}>
                       <Pencil className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => setDeleteId(p.id)}>
+                    <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(p)}>
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </TableCell>
                 </TableRow>
               ))
             ) : (
-              <TableRow><TableCell colSpan={4} className="text-center py-8 text-[color:var(--text-muted)]">No projects yet.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={5} className="text-center py-8 text-[color:var(--text-muted)]">No projects yet.</TableCell></TableRow>
             )}
           </TableBody>
         </Table>
@@ -169,7 +188,7 @@ function ProjectsAdmin() {
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={!!deleteId} onOpenChange={(v) => !v && setDeleteId(null)}>
+      <AlertDialog open={!!deleteTarget} onOpenChange={(v) => !v && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete project?</AlertDialogTitle>
