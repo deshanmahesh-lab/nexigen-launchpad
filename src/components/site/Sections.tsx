@@ -170,15 +170,12 @@ export function Stats() {
 }
 
 /* ------------ WORK ------------ */
-const projects = [
-  { name: "FinanceOS Platform", cat: "FinTech", problem: "Rebuilt core banking module reducing latency by 78%.", stack: ["Node.js", "PostgreSQL", "AWS"], metric: "↑ 78% Latency Reduction", grad: "from-[#7CC4E8]/30 to-[#8B6EC4]/30" },
-  { name: "HealthBridge", cat: "Healthcare", problem: "HIPAA-compliant patient portal serving 50k+ users.", stack: ["Next.js", "Python", "GCP"], metric: "50k+ Active Users", grad: "from-[#5BB8D4]/30 to-[#A89FD8]/30" },
-  { name: "LogiTrack ERP", cat: "Enterprise", problem: "Custom ERP system cutting manual ops time by 60%.", stack: ["React", "Go", "Kubernetes"], metric: "↑ 340% Performance Gain", grad: "from-[#8B6EC4]/30 to-[#7CC4E8]/30" },
-];
 export function Work() {
+  const { data, isLoading } = useQuery({ queryKey: ["projects"], queryFn: fetchProjects });
+  const projects = data ?? [];
   const tabs = ["All", "Enterprise", "FinTech", "Healthcare", "SaaS"];
   const [active, setActive] = useState("All");
-  const visible = projects.filter((p) => active === "All" || p.cat === active);
+  const visible = projects.filter((p) => active === "All" || p.category === active);
   return (
     <section id="work" className="relative py-28">
       <div className="mx-auto max-w-7xl px-6">
@@ -191,15 +188,19 @@ export function Work() {
           ))}
         </div>
         <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
-          {visible.map((p, i) => (
-            <Reveal key={p.name} delay={i * 80}>
+          {isLoading
+            ? Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-80 rounded-2xl" />
+              ))
+            : visible.map((p, i) => (
+            <Reveal key={p.id} delay={i * 80}>
               <article className="group relative rounded-2xl glass overflow-hidden hover:-translate-y-1 hover:border-primary/40 transition-all">
-                <div className={`h-44 bg-gradient-to-br ${p.grad} relative overflow-hidden`}>
+                <div className={`h-44 bg-gradient-to-br ${p.gradient} relative overflow-hidden`}>
                   <div className="absolute inset-0 dot-pattern opacity-50" />
                 </div>
                 <div className="p-6">
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="text-xs rounded-full glass px-3 py-1">{p.cat}</span>
+                    <span className="text-xs rounded-full glass px-3 py-1">{p.category}</span>
                   </div>
                   <h3 className="font-display text-xl font-semibold">{p.name}</h3>
                   <p className="mt-2 text-[color:var(--text-muted)] text-sm">{p.problem}</p>
