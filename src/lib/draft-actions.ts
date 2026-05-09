@@ -36,12 +36,15 @@ export async function saveDraft<T extends DraftableItem>(
 }
 
 /** Promote a draft to published. */
-export async function publishDraft(table: DraftableTable, draft: DraftableItem & Record<string, unknown>) {
+export async function publishDraft<T extends DraftableItem>(table: DraftableTable, draft: T) {
   if (draft.status !== "draft") return { error: null };
   if (draft.original_id) {
     // Copy draft fields onto the published row, then delete draft
-    const { id, status, original_id, created_at, ...fields } = draft;
-    void id; void status; void original_id; void created_at;
+    const { id: _id, status: _s, original_id: _oid, ...rest } = draft as T & { created_at?: string };
+    // Strip metadata that should not overwrite the published row
+    const fields = { ...rest } as Record<string, unknown>;
+    delete fields.created_at;
+    void _id; void _s; void _oid;
     const { error: upErr } = await supabase.from(table).update(fields as never).eq("id", draft.original_id);
     if (upErr) return { error: upErr };
     return supabase.from(table).delete().eq("id", draft.id);
