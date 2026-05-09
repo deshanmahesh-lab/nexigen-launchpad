@@ -262,27 +262,28 @@ export function TechStack() {
 
 /* ------------ TESTIMONIALS ------------ */
 export function Testimonials() {
-  const t = [
-    { q: "Nexigen delivered our platform 2 weeks ahead of schedule. Their architecture decisions saved us $40k in infrastructure costs.", n: "James R.", r: "CTO, TechFlow Inc.", flag: "🇺🇸" },
-    { q: "The team understood our compliance requirements immediately. No other agency came close to their technical depth.", n: "Priya M.", r: "Head of Engineering, MediCore", flag: "🇬🇧" },
-    { q: "Working across time zones was seamless. Best offshore engineering partner we've ever had.", n: "Lars K.", r: "Founder, ScandiSaaS", flag: "🇸🇪" },
-  ];
+  const { data, isLoading } = useQuery({ queryKey: ["testimonials"], queryFn: fetchTestimonials });
+  const t = data ?? [];
   return (
     <section className="relative py-28">
       <div className="mx-auto max-w-7xl px-6">
         <Reveal><h2 className="font-display font-bold text-4xl md:text-6xl">What Clients <span className="text-gradient">Say</span></h2></Reveal>
         <div className="mt-14 grid grid-cols-1 md:grid-cols-3 gap-6">
-          {t.map((x, i) => (
-            <Reveal key={x.n} delay={i * 90}>
+          {isLoading
+            ? Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-64 rounded-2xl" />
+              ))
+            : t.map((x, i) => (
+            <Reveal key={x.id} delay={i * 90}>
               <div className="rounded-2xl glass p-7 h-full hover:border-primary/40 hover:-translate-y-1 transition-all">
                 <Quote className="h-8 w-8 text-primary" />
-                <p className="mt-4 italic text-foreground/90 leading-relaxed">"{x.q}"</p>
+                <p className="mt-4 italic text-foreground/90 leading-relaxed">"{x.quote}"</p>
                 <div className="mt-6 flex text-yellow-400 gap-0.5">
                   {Array.from({ length: 5 }).map((_, k) => <Star key={k} className="h-4 w-4 fill-current" />)}
                 </div>
                 <div className="mt-4 text-sm">
-                  <div className="font-semibold">{x.n} <span className="ml-1">{x.flag}</span></div>
-                  <div className="text-[color:var(--text-muted)]">{x.r}</div>
+                  <div className="font-semibold">{x.name} <span className="ml-1">{x.flag}</span></div>
+                  <div className="text-[color:var(--text-muted)]">{x.role}</div>
                 </div>
               </div>
             </Reveal>
