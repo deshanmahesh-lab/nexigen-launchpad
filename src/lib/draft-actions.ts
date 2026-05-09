@@ -22,17 +22,17 @@ export async function saveDraft<T extends DraftableItem>(
   allRows: T[],
 ) {
   if (!editing) {
-    return supabase.from(table).insert({ ...payload, status: "draft", original_id: null });
+    return supabase.from(table).insert({ ...payload, status: "draft", original_id: null } as never);
   }
   if (editing.status === "draft") {
-    return supabase.from(table).update(payload).eq("id", editing.id);
+    return supabase.from(table).update(payload as never).eq("id", editing.id);
   }
   // editing is published — find/create draft pointing at it
   const existingDraft = allRows.find((r) => r.status === "draft" && r.original_id === editing.id);
   if (existingDraft) {
-    return supabase.from(table).update(payload).eq("id", existingDraft.id);
+    return supabase.from(table).update(payload as never).eq("id", existingDraft.id);
   }
-  return supabase.from(table).insert({ ...payload, status: "draft", original_id: editing.id });
+  return supabase.from(table).insert({ ...payload, status: "draft", original_id: editing.id } as never);
 }
 
 /** Promote a draft to published. */
@@ -42,12 +42,12 @@ export async function publishDraft(table: DraftableTable, draft: DraftableItem &
     // Copy draft fields onto the published row, then delete draft
     const { id, status, original_id, created_at, ...fields } = draft;
     void id; void status; void original_id; void created_at;
-    const { error: upErr } = await supabase.from(table).update(fields).eq("id", draft.original_id);
+    const { error: upErr } = await supabase.from(table).update(fields as never).eq("id", draft.original_id);
     if (upErr) return { error: upErr };
     return supabase.from(table).delete().eq("id", draft.id);
   }
   // Standalone draft → flip to published
-  return supabase.from(table).update({ status: "published" }).eq("id", draft.id);
+  return supabase.from(table).update({ status: "published" } as never).eq("id", draft.id);
 }
 
 /** Discard a draft (revert to the published version, or remove a brand-new draft entirely). */
