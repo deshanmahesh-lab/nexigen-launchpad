@@ -140,28 +140,28 @@ export function Process() {
 
 /* ------------ STATS ------------ */
 export function Stats() {
-  const stats = [
-    { v: 50, suf: "+", l: "Projects Delivered" },
-    { v: 12, suf: "+", l: "Countries Served" },
-    { v: 98, suf: "%", l: "Client Retention Rate" },
-    { v: 5, suf: "yrs", l: "Average Team Experience" },
-  ];
+  const { data, isLoading } = useQuery({ queryKey: ["stats"], queryFn: fetchStats });
+  const stats = data ?? [];
   return (
     <section className="relative py-24 overflow-hidden">
       <div className="orb" style={{ top: "10%", left: "10%", width: 400, height: 400, background: "rgba(124,196,232,0.12)", filter: "blur(120px)" }} />
       <div className="orb" style={{ bottom: "10%", right: "10%", width: 400, height: 400, background: "rgba(139,110,196,0.15)", filter: "blur(120px)" }} />
       <div className="relative mx-auto max-w-7xl px-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          {stats.map((s) => (
-            <Reveal key={s.l}>
-              <div className="text-center md:text-left">
-                <div className="font-display font-bold text-5xl md:text-7xl text-gradient leading-none">
-                  <Counter to={s.v} suffix={s.suf} />
-                </div>
-                <div className="mt-3 text-[color:var(--text-muted)]">{s.l}</div>
-              </div>
-            </Reveal>
-          ))}
+          {isLoading
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-24 rounded-xl" />
+              ))
+            : stats.map((s) => (
+                <Reveal key={s.id}>
+                  <div className="text-center md:text-left">
+                    <div className="font-display font-bold text-5xl md:text-7xl text-gradient leading-none">
+                      <Counter to={s.value} suffix={s.suffix} />
+                    </div>
+                    <div className="mt-3 text-[color:var(--text-muted)]">{s.label}</div>
+                  </div>
+                </Reveal>
+              ))}
         </div>
         <p className="mt-12 text-center text-[color:var(--text-muted)]">Numbers that reflect our commitment to excellence.</p>
       </div>
