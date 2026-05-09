@@ -70,7 +70,11 @@ export function Marquee() {
 
 /* ------------ SERVICES ------------ */
 export function Services() {
-  const { data, isLoading } = useQuery({ queryKey: ["services"], queryFn: fetchServices });
+  const preview = usePreview();
+  const { data, isLoading } = useQuery({
+    queryKey: ["services", preview ? "preview" : "public"],
+    queryFn: preview ? fetchServicesPreview : fetchServices,
+  });
   const cards = data ?? [];
   return (
     <section id="services" className="relative py-28">
@@ -140,7 +144,11 @@ export function Process() {
 
 /* ------------ STATS ------------ */
 export function Stats() {
-  const { data, isLoading } = useQuery({ queryKey: ["stats"], queryFn: fetchStats });
+  const preview = usePreview();
+  const { data, isLoading } = useQuery({
+    queryKey: ["stats", preview ? "preview" : "public"],
+    queryFn: preview ? fetchStatsPreview : fetchStats,
+  });
   const stats = data ?? [];
   return (
     <section className="relative py-24 overflow-hidden">
@@ -171,7 +179,11 @@ export function Stats() {
 
 /* ------------ WORK ------------ */
 export function Work() {
-  const { data, isLoading } = useQuery({ queryKey: ["projects"], queryFn: fetchProjects });
+  const preview = usePreview();
+  const { data, isLoading } = useQuery({
+    queryKey: ["projects", preview ? "preview" : "public"],
+    queryFn: preview ? fetchProjectsPreview : fetchProjects,
+  });
   const projects = data ?? [];
   const tabs = ["All", "Enterprise", "FinTech", "Healthcare", "SaaS"];
   const [active, setActive] = useState("All");
@@ -262,7 +274,11 @@ export function TechStack() {
 
 /* ------------ TESTIMONIALS ------------ */
 export function Testimonials() {
-  const { data, isLoading } = useQuery({ queryKey: ["testimonials"], queryFn: fetchTestimonials });
+  const preview = usePreview();
+  const { data, isLoading } = useQuery({
+    queryKey: ["testimonials", preview ? "preview" : "public"],
+    queryFn: preview ? fetchTestimonialsPreview : fetchTestimonials,
+  });
   const t = data ?? [];
   return (
     <section className="relative py-28">
