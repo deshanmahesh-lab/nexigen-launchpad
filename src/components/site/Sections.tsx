@@ -2,6 +2,14 @@ import { ArrowRight, Code2, Cloud, Brain, Smartphone, Plug, Palette, Shield, Che
 import { Reveal } from "./Reveal";
 import { Counter } from "./Counter";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { fetchServices, fetchProjects, fetchStats, fetchTestimonials } from "@/lib/queries";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { LucideIcon } from "lucide-react";
+
+const ICONS: Record<string, LucideIcon> = {
+  Code2, Cloud, Brain, Smartphone, Plug, Palette, Shield, CheckCircle2, Globe2, Sparkles,
+};
 
 /* ------------ HERO ------------ */
 export function Hero() {
@@ -62,14 +70,8 @@ export function Marquee() {
 
 /* ------------ SERVICES ------------ */
 export function Services() {
-  const cards = [
-    { icon: Code2, title: "Custom Enterprise Software Development", desc: "We architect bespoke platforms that eliminate operational bottlenecks and drive revenue growth.", span: "md:col-span-2" },
-    { icon: Cloud, title: "Cloud Infrastructure & DevOps", desc: "AWS, GCP, and Azure architectures built for 99.99% uptime." },
-    { icon: Brain, title: "AI & Machine Learning Integration", desc: "Embed intelligent automation into your existing workflows." },
-    { icon: Smartphone, title: "Mobile App Development", desc: "Cross-platform iOS & Android applications.", span: "md:col-span-2" },
-    { icon: Plug, title: "API & Systems Integration", desc: "Connect your enterprise stack seamlessly." },
-    { icon: Palette, title: "UI/UX Design & Prototyping", desc: "User-centered design that converts." },
-  ];
+  const { data, isLoading } = useQuery({ queryKey: ["services"], queryFn: fetchServices });
+  const cards = data ?? [];
   return (
     <section id="services" className="relative py-28">
       <div className="mx-auto max-w-7xl px-6">
@@ -78,20 +80,27 @@ export function Services() {
           <p className="mt-4 max-w-2xl text-[color:var(--text-muted)] text-lg">End-to-end software solutions engineered for scale, security, and measurable business impact.</p>
         </Reveal>
         <div className="mt-14 grid grid-cols-1 md:grid-cols-3 gap-5">
-          {cards.map((c, i) => (
-            <Reveal key={c.title} delay={i * 60} className={c.span ?? ""}>
-              <div className="group relative h-full rounded-2xl glass p-7 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_20px_60px_-20px_rgba(124,196,232,0.35)]">
-                <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-brand/20 border border-border mb-5">
-                  <c.icon className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="font-display text-xl font-semibold leading-snug">{c.title}</h3>
-                <p className="mt-3 text-[color:var(--text-muted)]">{c.desc}</p>
-                <div className="mt-6 inline-flex items-center gap-1 text-sm text-primary opacity-80 group-hover:gap-2 transition-all">
-                  Learn More <ArrowRight className="h-4 w-4" />
-                </div>
-              </div>
-            </Reveal>
-          ))}
+          {isLoading
+            ? Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-56 rounded-2xl" />
+              ))
+            : cards.map((c, i) => {
+                const Icon = ICONS[c.icon] ?? Sparkles;
+                return (
+                  <Reveal key={c.id} delay={i * 60} className={c.span ?? ""}>
+                    <div className="group relative h-full rounded-2xl glass p-7 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_20px_60px_-20px_rgba(124,196,232,0.35)]">
+                      <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-brand/20 border border-border mb-5">
+                        <Icon className="h-6 w-6 text-primary" />
+                      </div>
+                      <h3 className="font-display text-xl font-semibold leading-snug">{c.title}</h3>
+                      <p className="mt-3 text-[color:var(--text-muted)]">{c.description}</p>
+                      <div className="mt-6 inline-flex items-center gap-1 text-sm text-primary opacity-80 group-hover:gap-2 transition-all">
+                        Learn More <ArrowRight className="h-4 w-4" />
+                      </div>
+                    </div>
+                  </Reveal>
+                );
+              })}
         </div>
       </div>
     </section>
@@ -131,28 +140,28 @@ export function Process() {
 
 /* ------------ STATS ------------ */
 export function Stats() {
-  const stats = [
-    { v: 50, suf: "+", l: "Projects Delivered" },
-    { v: 12, suf: "+", l: "Countries Served" },
-    { v: 98, suf: "%", l: "Client Retention Rate" },
-    { v: 5, suf: "yrs", l: "Average Team Experience" },
-  ];
+  const { data, isLoading } = useQuery({ queryKey: ["stats"], queryFn: fetchStats });
+  const stats = data ?? [];
   return (
     <section className="relative py-24 overflow-hidden">
       <div className="orb" style={{ top: "10%", left: "10%", width: 400, height: 400, background: "rgba(124,196,232,0.12)", filter: "blur(120px)" }} />
       <div className="orb" style={{ bottom: "10%", right: "10%", width: 400, height: 400, background: "rgba(139,110,196,0.15)", filter: "blur(120px)" }} />
       <div className="relative mx-auto max-w-7xl px-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          {stats.map((s) => (
-            <Reveal key={s.l}>
-              <div className="text-center md:text-left">
-                <div className="font-display font-bold text-5xl md:text-7xl text-gradient leading-none">
-                  <Counter to={s.v} suffix={s.suf} />
-                </div>
-                <div className="mt-3 text-[color:var(--text-muted)]">{s.l}</div>
-              </div>
-            </Reveal>
-          ))}
+          {isLoading
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-24 rounded-xl" />
+              ))
+            : stats.map((s) => (
+                <Reveal key={s.id}>
+                  <div className="text-center md:text-left">
+                    <div className="font-display font-bold text-5xl md:text-7xl text-gradient leading-none">
+                      <Counter to={s.value} suffix={s.suffix} />
+                    </div>
+                    <div className="mt-3 text-[color:var(--text-muted)]">{s.label}</div>
+                  </div>
+                </Reveal>
+              ))}
         </div>
         <p className="mt-12 text-center text-[color:var(--text-muted)]">Numbers that reflect our commitment to excellence.</p>
       </div>
@@ -161,15 +170,12 @@ export function Stats() {
 }
 
 /* ------------ WORK ------------ */
-const projects = [
-  { name: "FinanceOS Platform", cat: "FinTech", problem: "Rebuilt core banking module reducing latency by 78%.", stack: ["Node.js", "PostgreSQL", "AWS"], metric: "↑ 78% Latency Reduction", grad: "from-[#7CC4E8]/30 to-[#8B6EC4]/30" },
-  { name: "HealthBridge", cat: "Healthcare", problem: "HIPAA-compliant patient portal serving 50k+ users.", stack: ["Next.js", "Python", "GCP"], metric: "50k+ Active Users", grad: "from-[#5BB8D4]/30 to-[#A89FD8]/30" },
-  { name: "LogiTrack ERP", cat: "Enterprise", problem: "Custom ERP system cutting manual ops time by 60%.", stack: ["React", "Go", "Kubernetes"], metric: "↑ 340% Performance Gain", grad: "from-[#8B6EC4]/30 to-[#7CC4E8]/30" },
-];
 export function Work() {
+  const { data, isLoading } = useQuery({ queryKey: ["projects"], queryFn: fetchProjects });
+  const projects = data ?? [];
   const tabs = ["All", "Enterprise", "FinTech", "Healthcare", "SaaS"];
   const [active, setActive] = useState("All");
-  const visible = projects.filter((p) => active === "All" || p.cat === active);
+  const visible = projects.filter((p) => active === "All" || p.category === active);
   return (
     <section id="work" className="relative py-28">
       <div className="mx-auto max-w-7xl px-6">
@@ -182,15 +188,19 @@ export function Work() {
           ))}
         </div>
         <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
-          {visible.map((p, i) => (
-            <Reveal key={p.name} delay={i * 80}>
+          {isLoading
+            ? Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-80 rounded-2xl" />
+              ))
+            : visible.map((p, i) => (
+            <Reveal key={p.id} delay={i * 80}>
               <article className="group relative rounded-2xl glass overflow-hidden hover:-translate-y-1 hover:border-primary/40 transition-all">
-                <div className={`h-44 bg-gradient-to-br ${p.grad} relative overflow-hidden`}>
+                <div className={`h-44 bg-gradient-to-br ${p.gradient} relative overflow-hidden`}>
                   <div className="absolute inset-0 dot-pattern opacity-50" />
                 </div>
                 <div className="p-6">
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="text-xs rounded-full glass px-3 py-1">{p.cat}</span>
+                    <span className="text-xs rounded-full glass px-3 py-1">{p.category}</span>
                   </div>
                   <h3 className="font-display text-xl font-semibold">{p.name}</h3>
                   <p className="mt-2 text-[color:var(--text-muted)] text-sm">{p.problem}</p>
@@ -252,27 +262,28 @@ export function TechStack() {
 
 /* ------------ TESTIMONIALS ------------ */
 export function Testimonials() {
-  const t = [
-    { q: "Nexigen delivered our platform 2 weeks ahead of schedule. Their architecture decisions saved us $40k in infrastructure costs.", n: "James R.", r: "CTO, TechFlow Inc.", flag: "🇺🇸" },
-    { q: "The team understood our compliance requirements immediately. No other agency came close to their technical depth.", n: "Priya M.", r: "Head of Engineering, MediCore", flag: "🇬🇧" },
-    { q: "Working across time zones was seamless. Best offshore engineering partner we've ever had.", n: "Lars K.", r: "Founder, ScandiSaaS", flag: "🇸🇪" },
-  ];
+  const { data, isLoading } = useQuery({ queryKey: ["testimonials"], queryFn: fetchTestimonials });
+  const t = data ?? [];
   return (
     <section className="relative py-28">
       <div className="mx-auto max-w-7xl px-6">
         <Reveal><h2 className="font-display font-bold text-4xl md:text-6xl">What Clients <span className="text-gradient">Say</span></h2></Reveal>
         <div className="mt-14 grid grid-cols-1 md:grid-cols-3 gap-6">
-          {t.map((x, i) => (
-            <Reveal key={x.n} delay={i * 90}>
+          {isLoading
+            ? Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-64 rounded-2xl" />
+              ))
+            : t.map((x, i) => (
+            <Reveal key={x.id} delay={i * 90}>
               <div className="rounded-2xl glass p-7 h-full hover:border-primary/40 hover:-translate-y-1 transition-all">
                 <Quote className="h-8 w-8 text-primary" />
-                <p className="mt-4 italic text-foreground/90 leading-relaxed">"{x.q}"</p>
+                <p className="mt-4 italic text-foreground/90 leading-relaxed">"{x.quote}"</p>
                 <div className="mt-6 flex text-yellow-400 gap-0.5">
                   {Array.from({ length: 5 }).map((_, k) => <Star key={k} className="h-4 w-4 fill-current" />)}
                 </div>
                 <div className="mt-4 text-sm">
-                  <div className="font-semibold">{x.n} <span className="ml-1">{x.flag}</span></div>
-                  <div className="text-[color:var(--text-muted)]">{x.r}</div>
+                  <div className="font-semibold">{x.name} <span className="ml-1">{x.flag}</span></div>
+                  <div className="text-[color:var(--text-muted)]">{x.role}</div>
                 </div>
               </div>
             </Reveal>
