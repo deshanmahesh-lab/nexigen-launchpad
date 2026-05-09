@@ -3,7 +3,11 @@ import { Reveal } from "./Reveal";
 import { Counter } from "./Counter";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchServices, fetchProjects, fetchStats, fetchTestimonials } from "@/lib/queries";
+import {
+  fetchServices, fetchProjects, fetchStats, fetchTestimonials,
+  fetchServicesPreview, fetchProjectsPreview, fetchStatsPreview, fetchTestimonialsPreview,
+} from "@/lib/queries";
+import { usePreview } from "@/lib/preview-context";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { LucideIcon } from "lucide-react";
 
