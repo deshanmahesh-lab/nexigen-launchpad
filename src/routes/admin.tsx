@@ -15,10 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
-
-const STORAGE_KEY = "nexigen_admin";
-const ADMIN_USER = "admin";
-const ADMIN_PASS = "nexigen2025";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -41,14 +38,45 @@ const NAV = [
 function AdminLayout() {
   const [hydrated, setHydrated] = useState(false);
   const [authed, setAuthed] = useState(false);
+  const [checkingRole, setCheckingRole] = useState(false);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    setAuthed(typeof window !== "undefined" && localStorage.getItem(STORAGE_KEY) === "1");
-    setHydrated(true);
+    let mounted = true;
+    const check = async (userId: string | undefined) => {
+      if (!userId) {
+        if (mounted) { setAuthed(false); setHydrated(true); }
+        return;
+      }
+      setCheckingRole(true);
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId)
+        .eq("role", "admin")
+        .maybeSingle();
+      if (!mounted) return;
+      if (error || !data) {
+        await supabase.auth.signOut();
+        setAuthed(false);
+        toast.error("This account does not have admin access.");
+      } else {
+        setAuthed(true);
+      }
+      setCheckingRole(false);
+      setHydrated(true);
+    };
+    const { data: sub } = supabase.auth.onAuthStateChange((_evt, session) => {
+      void check(session?.user?.id);
+    });
+    supabase.auth.getSession().then(({ data }) => check(data.session?.user?.id));
+    return () => {
+      mounted = false;
+      sub.subscription.unsubscribe();
+    };
   }, []);
 
-  if (!hydrated) {
+  if (!hydrated || checkingRole) {
     return <div className="min-h-screen bg-background" />;
   }
 
@@ -56,8 +84,8 @@ function AdminLayout() {
     return <LoginScreen onSuccess={() => setAuthed(true)} />;
   }
 
-  const handleLogout = () => {
-    localStorage.removeItem(STORAGE_KEY);
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     setAuthed(false);
     toast.success("Signed out");
   };
@@ -142,23 +170,37 @@ function NavItem({
 }
 
 function LoginScreen({ onSuccess }: { onSuccess: () => void }) {
-  const [username, setUsername] = useState("");
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    if (username === ADMIN_USER && password === ADMIN_PASS) {
-      localStorage.setItem(STORAGE_KEY, "1");
-      toast.success("Welcome back");
+    try {
+      if (mode === "signup") {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { emailRedirectTo: `${window.location.origin}/admin` },
+        });
+        if (error) throw error;
+        toast.success("Account created. Signing you in…");
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        toast.success("Welcome back");
+      }
       onSuccess();
       navigate({ to: "/admin" });
-    } else {
-      toast.error("Invalid credentials");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Authentication failed";
+      toast.error(msg);
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   };
 
   return (
@@ -174,16 +216,19 @@ function LoginScreen({ onSuccess }: { onSuccess: () => void }) {
       <Card className="relative w-full max-w-md p-8 glass border-border">
         <div className="text-center mb-6">
           <div className="font-display font-bold text-2xl text-gradient">Nexigen Admin</div>
-          <p className="mt-2 text-sm text-[color:var(--text-muted)]">Sign in to manage site content</p>
+          <p className="mt-2 text-sm text-[color:var(--text-muted)]">
+            {mode === "signin" ? "Sign in to manage site content" : "Create the first admin account"}
+          </p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="username">Username</Label>
+            <Label htmlFor="email">Email</Label>
             <Input
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              autoComplete="username"
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
               required
               className="mt-1.5"
             />
@@ -195,15 +240,27 @@ function LoginScreen({ onSuccess }: { onSuccess: () => void }) {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
+              autoComplete={mode === "signin" ? "current-password" : "new-password"}
+              minLength={mode === "signup" ? 8 : undefined}
               required
               className="mt-1.5"
             />
           </div>
           <Button type="submit" disabled={submitting} className="w-full bg-gradient-brand hover:opacity-90">
-            Sign In
+            {submitting ? "Please wait…" : mode === "signin" ? "Sign In" : "Create admin account"}
           </Button>
         </form>
+        <div className="mt-4 text-center text-xs text-[color:var(--text-muted)]">
+          {mode === "signin" ? (
+            <button type="button" onClick={() => setMode("signup")} className="hover:text-foreground underline-offset-4 hover:underline">
+              First time here? Create the admin account
+            </button>
+          ) : (
+            <button type="button" onClick={() => setMode("signin")} className="hover:text-foreground underline-offset-4 hover:underline">
+              Already have an account? Sign in
+            </button>
+          )}
+        </div>
       </Card>
     </div>
   );
