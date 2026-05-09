@@ -70,14 +70,8 @@ export function Marquee() {
 
 /* ------------ SERVICES ------------ */
 export function Services() {
-  const cards = [
-    { icon: Code2, title: "Custom Enterprise Software Development", desc: "We architect bespoke platforms that eliminate operational bottlenecks and drive revenue growth.", span: "md:col-span-2" },
-    { icon: Cloud, title: "Cloud Infrastructure & DevOps", desc: "AWS, GCP, and Azure architectures built for 99.99% uptime." },
-    { icon: Brain, title: "AI & Machine Learning Integration", desc: "Embed intelligent automation into your existing workflows." },
-    { icon: Smartphone, title: "Mobile App Development", desc: "Cross-platform iOS & Android applications.", span: "md:col-span-2" },
-    { icon: Plug, title: "API & Systems Integration", desc: "Connect your enterprise stack seamlessly." },
-    { icon: Palette, title: "UI/UX Design & Prototyping", desc: "User-centered design that converts." },
-  ];
+  const { data, isLoading } = useQuery({ queryKey: ["services"], queryFn: fetchServices });
+  const cards = data ?? [];
   return (
     <section id="services" className="relative py-28">
       <div className="mx-auto max-w-7xl px-6">
@@ -86,20 +80,27 @@ export function Services() {
           <p className="mt-4 max-w-2xl text-[color:var(--text-muted)] text-lg">End-to-end software solutions engineered for scale, security, and measurable business impact.</p>
         </Reveal>
         <div className="mt-14 grid grid-cols-1 md:grid-cols-3 gap-5">
-          {cards.map((c, i) => (
-            <Reveal key={c.title} delay={i * 60} className={c.span ?? ""}>
-              <div className="group relative h-full rounded-2xl glass p-7 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_20px_60px_-20px_rgba(124,196,232,0.35)]">
-                <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-brand/20 border border-border mb-5">
-                  <c.icon className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="font-display text-xl font-semibold leading-snug">{c.title}</h3>
-                <p className="mt-3 text-[color:var(--text-muted)]">{c.desc}</p>
-                <div className="mt-6 inline-flex items-center gap-1 text-sm text-primary opacity-80 group-hover:gap-2 transition-all">
-                  Learn More <ArrowRight className="h-4 w-4" />
-                </div>
-              </div>
-            </Reveal>
-          ))}
+          {isLoading
+            ? Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-56 rounded-2xl" />
+              ))
+            : cards.map((c, i) => {
+                const Icon = ICONS[c.icon] ?? Sparkles;
+                return (
+                  <Reveal key={c.id} delay={i * 60} className={c.span ?? ""}>
+                    <div className="group relative h-full rounded-2xl glass p-7 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_20px_60px_-20px_rgba(124,196,232,0.35)]">
+                      <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-brand/20 border border-border mb-5">
+                        <Icon className="h-6 w-6 text-primary" />
+                      </div>
+                      <h3 className="font-display text-xl font-semibold leading-snug">{c.title}</h3>
+                      <p className="mt-3 text-[color:var(--text-muted)]">{c.description}</p>
+                      <div className="mt-6 inline-flex items-center gap-1 text-sm text-primary opacity-80 group-hover:gap-2 transition-all">
+                        Learn More <ArrowRight className="h-4 w-4" />
+                      </div>
+                    </div>
+                  </Reveal>
+                );
+              })}
         </div>
       </div>
     </section>
