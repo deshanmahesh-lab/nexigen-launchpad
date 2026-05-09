@@ -77,10 +77,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "description", content: "Nexigen builds custom enterprise software, cloud infrastructure, and AI-integrated platforms for global B2B clients — from Colombo to California." },
       { name: "author", content: "Nexigen" },
       { property: "og:title", content: "Nexigen — Engineering Tomorrow's Digital Foundations" },
-      { property: "og:description", content: "Custom enterprise software, cloud, and AI platforms engineered to scale globally." },
+      { property: "og:description", content: "Nexigen builds custom enterprise software, cloud infrastructure, and AI-integrated platforms for global B2B clients — from Colombo to California." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Nexigen — Engineering Tomorrow's Digital Foundations" },
+      { name: "twitter:description", content: "Nexigen builds custom enterprise software, cloud infrastructure, and AI-integrated platforms for global B2B clients — from Colombo to California." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/b4e297c1-ae3b-450c-92d9-cb25cce7992a" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/b4e297c1-ae3b-450c-92d9-cb25cce7992a" },
     ],
     links: [
       {
