@@ -2,6 +2,14 @@ import { ArrowRight, Code2, Cloud, Brain, Smartphone, Plug, Palette, Shield, Che
 import { Reveal } from "./Reveal";
 import { Counter } from "./Counter";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { fetchServices, fetchProjects, fetchStats, fetchTestimonials } from "@/lib/queries";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { LucideIcon } from "lucide-react";
+
+const ICONS: Record<string, LucideIcon> = {
+  Code2, Cloud, Brain, Smartphone, Plug, Palette, Shield, CheckCircle2, Globe2, Sparkles,
+};
 
 /* ------------ HERO ------------ */
 export function Hero() {
