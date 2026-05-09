@@ -22,8 +22,10 @@ export type Database = {
           id: string
           metric: string
           name: string
+          original_id: string | null
           problem: string
           stack: string[]
+          status: string
         }
         Insert: {
           category: string
@@ -32,8 +34,10 @@ export type Database = {
           id?: string
           metric: string
           name: string
+          original_id?: string | null
           problem: string
           stack?: string[]
+          status?: string
         }
         Update: {
           category?: string
@@ -42,10 +46,20 @@ export type Database = {
           id?: string
           metric?: string
           name?: string
+          original_id?: string | null
           problem?: string
           stack?: string[]
+          status?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "projects_original_id_fkey"
+            columns: ["original_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       services: {
         Row: {
@@ -54,7 +68,9 @@ export type Database = {
           icon: string
           id: string
           order_index: number
+          original_id: string | null
           span: string | null
+          status: string
           title: string
         }
         Insert: {
@@ -63,7 +79,9 @@ export type Database = {
           icon: string
           id?: string
           order_index?: number
+          original_id?: string | null
           span?: string | null
+          status?: string
           title: string
         }
         Update: {
@@ -72,10 +90,20 @@ export type Database = {
           icon?: string
           id?: string
           order_index?: number
+          original_id?: string | null
           span?: string | null
+          status?: string
           title?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "services_original_id_fkey"
+            columns: ["original_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       site_config: {
         Row: {
@@ -100,6 +128,8 @@ export type Database = {
           created_at: string
           id: string
           label: string
+          original_id: string | null
+          status: string
           suffix: string
           value: number
         }
@@ -107,6 +137,8 @@ export type Database = {
           created_at?: string
           id?: string
           label: string
+          original_id?: string | null
+          status?: string
           suffix?: string
           value: number
         }
@@ -114,10 +146,20 @@ export type Database = {
           created_at?: string
           id?: string
           label?: string
+          original_id?: string | null
+          status?: string
           suffix?: string
           value?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "stats_original_id_fkey"
+            columns: ["original_id"]
+            isOneToOne: false
+            referencedRelation: "stats"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       testimonials: {
         Row: {
@@ -125,26 +167,40 @@ export type Database = {
           flag: string
           id: string
           name: string
+          original_id: string | null
           quote: string
           role: string
+          status: string
         }
         Insert: {
           created_at?: string
           flag: string
           id?: string
           name: string
+          original_id?: string | null
           quote: string
           role: string
+          status?: string
         }
         Update: {
           created_at?: string
           flag?: string
           id?: string
           name?: string
+          original_id?: string | null
           quote?: string
           role?: string
+          status?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "testimonials_original_id_fkey"
+            columns: ["original_id"]
+            isOneToOne: false
+            referencedRelation: "testimonials"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
