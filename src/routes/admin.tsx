@@ -13,6 +13,13 @@ import {
   LogOut,
   Menu,
   X,
+  Settings,
+  ListChecks,
+  Cpu,
+  Sparkles,
+  UserCheck,
+  BookOpen,
+  Inbox,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,10 +36,17 @@ export const Route = createFileRoute("/admin")({
 
 const NAV = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { to: "/admin/settings", label: "Site Settings", icon: Settings },
   { to: "/admin/services", label: "Services", icon: Wrench },
+  { to: "/admin/process", label: "Process", icon: ListChecks },
+  { to: "/admin/tech", label: "Tech Stack", icon: Cpu },
   { to: "/admin/projects", label: "Projects", icon: Briefcase },
   { to: "/admin/testimonials", label: "Testimonials", icon: MessageSquareQuote },
+  { to: "/admin/perks", label: "Perks", icon: Sparkles },
+  { to: "/admin/roles", label: "Open Roles", icon: UserCheck },
+  { to: "/admin/blog", label: "Blog Posts", icon: BookOpen },
   { to: "/admin/stats", label: "Stats", icon: BarChart3 },
+  { to: "/admin/messages", label: "Messages", icon: Inbox },
 ] as const;
 
 function AdminLayout() {
