@@ -394,6 +394,8 @@ export function About() {
 
 /* ------------ CERTIFICATIONS ------------ */
 export function Certs() {
+  const { data: cfg } = useConfig<{ title: string }>("certs");
+  const title = cfg?.title ?? "Globally Certified. Enterprise Ready.";
   const certs = [
     { i: Shield, t: "ISO/IEC 27001", d: "Information security management" },
     { i: CheckCircle2, t: "SOC 2 Type II", d: "Audited security controls" },
@@ -406,7 +408,7 @@ export function Certs() {
       <div className="orb" style={{ top: "20%", left: "30%", width: 500, height: 500, background: "rgba(139,110,196,0.12)", filter: "blur(140px)" }} />
       <div className="relative mx-auto max-w-7xl px-6 text-center">
         <Reveal>
-          <h2 className="font-display font-bold text-4xl md:text-5xl">Globally Certified. <span className="text-gradient">Enterprise Ready.</span></h2>
+          <h2 className="font-display font-bold text-4xl md:text-5xl">{renderHighlight(title)}</h2>
         </Reveal>
         <div className="mt-12 flex flex-wrap justify-center gap-4">
           {certs.map((c, i) => (
