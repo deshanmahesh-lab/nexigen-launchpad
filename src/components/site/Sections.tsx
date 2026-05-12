@@ -134,12 +134,8 @@ export function Services() {
 
 /* ------------ PROCESS ------------ */
 export function Process() {
-  const steps = [
-    { n: "01", t: "Discovery", d: "We learn your business goals and constraints." },
-    { n: "02", t: "Architecture", d: "We design a scalable technical blueprint." },
-    { n: "03", t: "Build & Iterate", d: "Agile sprints with weekly demos." },
-    { n: "04", t: "Deploy & Scale", d: "CI/CD pipelines, monitoring, support." },
-  ];
+  const { data } = useQuery({ queryKey: ["process_steps"], queryFn: fetchProcessSteps });
+  const steps = data ?? [];
   return (
     <section className="relative py-28 bg-[color:var(--surface)]/40">
       <div className="mx-auto max-w-7xl px-6">
@@ -147,13 +143,13 @@ export function Process() {
         <div className="mt-16 grid grid-cols-1 md:grid-cols-4 gap-6 relative">
           <div className="hidden md:block absolute top-7 left-[12%] right-[12%] border-t-2 border-dashed border-primary/30" />
           {steps.map((s, i) => (
-            <Reveal key={s.n} delay={i * 120}>
+            <Reveal key={s.id} delay={i * 120}>
               <div className="relative">
                 <div className="h-14 w-14 rounded-full glass-strong flex items-center justify-center font-display font-bold text-lg bg-gradient-brand/10 border-primary/30">
-                  <span className="text-gradient">{s.n}</span>
+                  <span className="text-gradient">{s.number}</span>
                 </div>
-                <h3 className="mt-5 font-display text-xl font-semibold">{s.t}</h3>
-                <p className="mt-2 text-[color:var(--text-muted)]">{s.d}</p>
+                <h3 className="mt-5 font-display text-xl font-semibold">{s.title}</h3>
+                <p className="mt-2 text-[color:var(--text-muted)]">{s.description}</p>
               </div>
             </Reveal>
           ))}
