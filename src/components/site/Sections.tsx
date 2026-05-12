@@ -515,6 +515,35 @@ export function Blog() {
 
 /* ------------ CONTACT ------------ */
 export function Contact() {
+  const { data: cfg } = useConfig<{ email: string; phone: string; location: string; hours: string }>("contact_info");
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const fd = new FormData(form);
+    const payload = {
+      name: String(fd.get("name") ?? "").trim().slice(0, 120),
+      company: (String(fd.get("company") ?? "").trim() || null)?.slice(0, 120) ?? null,
+      email: String(fd.get("email") ?? "").trim().slice(0, 255),
+      project_type: (String(fd.get("project_type") ?? "").trim() || null),
+      message: String(fd.get("message") ?? "").trim().slice(0, 4000),
+    };
+    if (!payload.name || !payload.email || !payload.message) {
+      toast.error("Please fill in name, email, and message.");
+      return;
+    }
+    setSubmitting(true);
+    const { error } = await supabase.from("contact_messages").insert(payload);
+    setSubmitting(false);
+    if (error) {
+      toast.error("Failed to send. Please try again.");
+      return;
+    }
+    toast.success("Thanks — we'll be in touch within 24 hours.");
+    form.reset();
+  };
+
   return (
     <section id="contact" className="relative py-28 overflow-hidden">
       <div className="orb" style={{ top: "10%", left: "5%", width: 500, height: 500, background: "rgba(124,196,232,0.18)", filter: "blur(130px)" }} />
@@ -526,28 +555,28 @@ export function Contact() {
         </Reveal>
 
         <Reveal delay={150}>
-          <form onSubmit={(e) => { e.preventDefault(); alert("Thanks — we'll be in touch within 24 hours."); }} className="mt-12 glass-strong rounded-3xl p-6 md:p-10 text-left space-y-4">
+          <form onSubmit={handleSubmit} className="mt-12 glass-strong rounded-3xl p-6 md:p-10 text-left space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input label="Name" name="name" required />
               <Input label="Company" name="company" />
               <Input label="Email" name="email" type="email" required />
               <Select label="Project Type" name="project_type" options={["Web Application", "Mobile App", "Enterprise Software", "Cloud Infrastructure", "AI Integration", "Other"]} />
-              <Select label="Budget Range" name="budget" options={["$5k–$15k", "$15k–$50k", "$50k–$150k", "$150k+"]} />
             </div>
             <div>
               <label className="text-xs font-mono uppercase tracking-widest text-[color:var(--text-muted)]">Message</label>
               <textarea name="message" rows={5} required className="mt-2 w-full rounded-xl bg-[color:var(--surface-2)] border border-border px-4 py-3 text-foreground outline-none focus:border-primary/60 transition" />
             </div>
-            <button type="submit" className="w-full md:w-auto inline-flex items-center justify-center gap-2 rounded-full px-7 py-4 text-base font-semibold bg-gradient-brand text-primary-foreground hover:scale-[1.02] hover:shadow-[0_0_40px_-8px_rgba(139,110,196,0.7)] transition-all">
-              Send Message <ArrowRight className="h-5 w-5" />
+            <button type="submit" disabled={submitting} className="w-full md:w-auto inline-flex items-center justify-center gap-2 rounded-full px-7 py-4 text-base font-semibold bg-gradient-brand text-primary-foreground hover:scale-[1.02] hover:shadow-[0_0_40px_-8px_rgba(139,110,196,0.7)] transition-all disabled:opacity-60 disabled:hover:scale-100">
+              {submitting ? "Sending…" : <>Send Message <ArrowRight className="h-5 w-5" /></>}
             </button>
           </form>
         </Reveal>
 
         <div className="mt-10 flex flex-wrap justify-center gap-3 text-sm">
-          <span className="inline-flex items-center gap-2 glass rounded-full px-4 py-2"><Mail className="h-4 w-4 text-primary" /> hello@nexigen.io</span>
-          <span className="inline-flex items-center gap-2 glass rounded-full px-4 py-2"><MapPin className="h-4 w-4 text-primary" /> Colombo, Sri Lanka</span>
-          <span className="inline-flex items-center gap-2 glass rounded-full px-4 py-2"><Clock className="h-4 w-4 text-primary" /> Mon–Fri, 9am–6pm IST</span>
+          {cfg?.email && <span className="inline-flex items-center gap-2 glass rounded-full px-4 py-2"><Mail className="h-4 w-4 text-primary" /> {cfg.email}</span>}
+          {cfg?.phone && <span className="inline-flex items-center gap-2 glass rounded-full px-4 py-2"><Phone className="h-4 w-4 text-primary" /> {cfg.phone}</span>}
+          {cfg?.location && <span className="inline-flex items-center gap-2 glass rounded-full px-4 py-2"><MapPin className="h-4 w-4 text-primary" /> {cfg.location}</span>}
+          {cfg?.hours && <span className="inline-flex items-center gap-2 glass rounded-full px-4 py-2"><Clock className="h-4 w-4 text-primary" /> {cfg.hours}</span>}
         </div>
       </div>
     </section>
