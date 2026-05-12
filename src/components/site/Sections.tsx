@@ -484,26 +484,24 @@ export function Careers() {
 
 /* ------------ BLOG ------------ */
 export function Blog() {
-  const posts = [
-    { c: "Tech Architecture", t: "Building Scalable Multi-Tenant SaaS on AWS", r: "8 min read" },
-    { c: "Industry", t: "Why Sri Lanka is Becoming Asia's Next Dev Hub", r: "5 min read" },
-    { c: "Business", t: "The Hidden Costs of Offshore Development (And How We Solved Them)", r: "6 min read" },
-  ];
+  const { data } = useQuery({ queryKey: ["blog_posts"], queryFn: fetchBlogPosts });
+  const posts = data ?? [];
   return (
     <section id="blog" className="relative py-28 bg-[color:var(--surface)]/40">
       <div className="mx-auto max-w-7xl px-6">
         <Reveal><h2 className="font-display font-bold text-4xl md:text-6xl">From Our <span className="text-gradient">Engineers</span></h2></Reveal>
         <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
           {posts.map((p, i) => (
-            <Reveal key={p.t} delay={i * 80}>
+            <Reveal key={p.id} delay={i * 80}>
               <article className="rounded-2xl glass overflow-hidden hover:-translate-y-1 hover:border-primary/40 transition-all h-full flex flex-col">
                 <div className="h-36 bg-gradient-to-br from-[#7CC4E8]/25 to-[#8B6EC4]/25 dot-pattern" />
                 <div className="p-6 flex flex-col flex-1">
-                  <span className="text-xs rounded-full glass px-3 py-1 self-start">{p.c}</span>
-                  <h3 className="mt-4 font-display text-lg font-semibold leading-snug">{p.t}</h3>
+                  <span className="text-xs rounded-full glass px-3 py-1 self-start">{p.category}</span>
+                  <h3 className="mt-4 font-display text-lg font-semibold leading-snug">{p.title}</h3>
+                  {p.author && <div className="mt-2 text-xs text-[color:var(--text-muted)]">By {p.author}</div>}
                   <div className="mt-auto pt-5 flex items-center justify-between text-sm">
-                    <span className="text-[color:var(--text-muted)]">{p.r}</span>
-                    <a href="#" className="text-primary inline-flex items-center gap-1 hover:gap-2 transition-all">Read Article <ArrowRight className="h-4 w-4" /></a>
+                    <span className="text-[color:var(--text-muted)]">{p.read_time}</span>
+                    <a href={p.link || "#"} target="_blank" rel="noopener noreferrer" className="text-primary inline-flex items-center gap-1 hover:gap-2 transition-all">Read Article <ArrowRight className="h-4 w-4" /></a>
                   </div>
                 </div>
               </article>
