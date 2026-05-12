@@ -1,4 +1,4 @@
-import { ArrowRight, Code2, Cloud, Brain, Smartphone, Plug, Palette, Shield, CheckCircle2, Globe2, Sparkles, Github, Linkedin, Twitter, Dribbble, Mail, MapPin, Clock, Star, Quote } from "lucide-react";
+import { ArrowRight, Code2, Cloud, Brain, Smartphone, Plug, Palette, Shield, CheckCircle2, Globe2, Sparkles, Github, Linkedin, Twitter, Dribbble, Mail, MapPin, Clock, Phone, Star, Quote } from "lucide-react";
 import { Reveal } from "./Reveal";
 import { Counter } from "./Counter";
 import { useState } from "react";
@@ -6,17 +6,34 @@ import { useQuery } from "@tanstack/react-query";
 import {
   fetchServices, fetchProjects, fetchStats, fetchTestimonials,
   fetchServicesPreview, fetchProjectsPreview, fetchStatsPreview, fetchTestimonialsPreview,
+  fetchSiteConfig, fetchProcessSteps, fetchTechStack, fetchPerks, fetchOpenRoles, fetchBlogPosts,
 } from "@/lib/queries";
 import { usePreview } from "@/lib/preview-context";
 import { Skeleton } from "@/components/ui/skeleton";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import type { LucideIcon } from "lucide-react";
 
 const ICONS: Record<string, LucideIcon> = {
   Code2, Cloud, Brain, Smartphone, Plug, Palette, Shield, CheckCircle2, Globe2, Sparkles,
 };
 
+function useConfig<T = Record<string, unknown>>(key: string) {
+  return useQuery({
+    queryKey: ["site_config", key],
+    queryFn: async () => (await fetchSiteConfig(key))?.value as T | undefined,
+  });
+}
+
 /* ------------ HERO ------------ */
 export function Hero() {
+  const { data: cfg } = useConfig<{
+    badge: string; title_line1: string; title_line2: string; description: string;
+  }>("hero");
+  const badge = cfg?.badge ?? "Engineering Tomorrow's Digital Foundations";
+  const line1 = cfg?.title_line1 ?? "We Engineer Software";
+  const line2 = cfg?.title_line2 ?? "That Scales Globally.";
+  const description = cfg?.description ?? "";
   return (
     <section id="top" className="relative min-h-[100svh] flex items-center justify-center overflow-hidden pt-24 pb-16">
       <div className="orb animate-orb-1" style={{ top: "-100px", left: "-100px", width: 600, height: 600, background: "rgba(124,196,232,0.18)", filter: "blur(120px)" }} />
@@ -27,14 +44,14 @@ export function Hero() {
       <div className="relative mx-auto max-w-6xl px-6 text-center">
         <div className="inline-flex items-center gap-2 rounded-full glass px-4 py-1.5 text-xs font-mono mb-8 animate-fade-up">
           <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-          Engineering Tomorrow's Digital Foundations
+          {badge}
         </div>
         <h1 className="font-display font-bold text-5xl sm:text-6xl md:text-7xl lg:text-[88px] leading-[1.02] tracking-tight animate-fade-up" style={{ animationDelay: "0.05s" }}>
-          We Engineer Software <br className="hidden md:block" />
-          That <span className="text-gradient">Scales Globally.</span>
+          {line1} <br className="hidden md:block" />
+          <span className="text-gradient">{line2}</span>
         </h1>
         <p className="mt-6 max-w-2xl mx-auto text-lg md:text-xl text-[color:var(--text-muted)] animate-fade-up" style={{ animationDelay: "0.3s" }}>
-          Nexigen builds custom enterprise software, cloud infrastructure, and AI-integrated platforms for businesses worldwide — from Colombo to California.
+          {description}
         </p>
         <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center animate-fade-up" style={{ animationDelay: "0.5s" }}>
           <a href="#contact" className="inline-flex items-center justify-center gap-2 rounded-full px-7 py-4 text-base font-semibold bg-gradient-brand text-primary-foreground hover:scale-[1.03] hover:shadow-[0_0_50px_-8px_rgba(139,110,196,0.7)] transition-all">
