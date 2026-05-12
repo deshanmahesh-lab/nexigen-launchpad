@@ -324,17 +324,18 @@ export function Testimonials() {
 
 /* ------------ ABOUT ------------ */
 export function About() {
+  const { data: cfg } = useConfig<{ title: string; paragraphs: string[] }>("about");
+  const title = cfg?.title ?? "Built in Sri Lanka. Built for the World.";
+  const paragraphs = cfg?.paragraphs ?? [];
   return (
     <section id="about" className="relative py-28 bg-[color:var(--surface)]/40">
       <div className="mx-auto max-w-7xl px-6 grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
         <Reveal>
           <h2 className="font-display font-bold text-4xl md:text-5xl leading-tight">
-            Built in Sri Lanka. <br /> Built for the <span className="text-gradient">World.</span>
+            {renderHighlight(title)}
           </h2>
           <div className="mt-6 space-y-4 text-[color:var(--text-muted)] leading-relaxed">
-            <p>We started Nexigen with one belief: world-class software engineering shouldn't be limited by geography.</p>
-            <p>Based in Sri Lanka — one of Asia's fastest-growing tech ecosystems — we combine elite engineering talent with global delivery standards to build software that competes at the highest level.</p>
-            <p>From regulated FinTech platforms to AI-powered SaaS, we partner with ambitious teams shipping ambitious products.</p>
+            {paragraphs.map((p, i) => <p key={i}>{p}</p>)}
           </div>
           <div className="mt-7 flex flex-wrap gap-2">
             {["Radical Transparency", "Engineering Excellence", "Client Obsession", "Continuous Learning"].map((v) => (
