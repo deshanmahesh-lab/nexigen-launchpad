@@ -255,13 +255,8 @@ export function Work() {
 
 /* ------------ TECH STACK ------------ */
 export function TechStack() {
-  const groups = [
-    { c: "Frontend", items: ["React", "Next.js", "Vue.js", "TypeScript"] },
-    { c: "Backend", items: ["Node.js", "Python", "Go", "Laravel"] },
-    { c: "Cloud", items: ["AWS", "GCP", "Docker", "Kubernetes"] },
-    { c: "Data", items: ["PostgreSQL", "MongoDB", "Redis", "Elasticsearch"] },
-    { c: "AI/ML", items: ["TensorFlow", "PyTorch", "OpenAI APIs", "LangChain"] },
-  ];
+  const { data } = useQuery({ queryKey: ["tech_stack"], queryFn: fetchTechStack });
+  const groups = data ?? [];
   return (
     <section className="relative py-28 bg-[color:var(--surface)]/40">
       <div className="mx-auto max-w-7xl px-6">
@@ -270,9 +265,9 @@ export function TechStack() {
         </Reveal>
         <div className="mt-14 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {groups.map((g, i) => (
-            <Reveal key={g.c} delay={i * 60}>
+            <Reveal key={g.id} delay={i * 60}>
               <div className="rounded-2xl glass p-6 h-full hover:border-primary/40 transition-all">
-                <div className="text-xs font-mono uppercase tracking-widest text-primary mb-4">{g.c}</div>
+                <div className="text-xs font-mono uppercase tracking-widest text-primary mb-4">{g.category}</div>
                 <div className="grid grid-cols-2 gap-3">
                   {g.items.map((t) => (
                     <div key={t} className="flex items-center gap-2 rounded-lg bg-[color:var(--surface-2)] px-3 py-2 text-sm border border-border">
