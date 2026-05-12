@@ -13,6 +13,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminTestimonialsRouteImport } from './routes/admin/testimonials'
+import { Route as AdminTechRouteImport } from './routes/admin/tech'
 import { Route as AdminStatsRouteImport } from './routes/admin/stats'
 import { Route as AdminServicesRouteImport } from './routes/admin/services'
 import { Route as AdminProjectsRouteImport } from './routes/admin/projects'
@@ -36,6 +37,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
 const AdminTestimonialsRoute = AdminTestimonialsRouteImport.update({
   id: '/testimonials',
   path: '/testimonials',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminTechRoute = AdminTechRouteImport.update({
+  id: '/tech',
+  path: '/tech',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminStatsRoute = AdminStatsRouteImport.update({
@@ -66,6 +72,7 @@ export interface FileRoutesByFullPath {
   '/admin/projects': typeof AdminProjectsRoute
   '/admin/services': typeof AdminServicesRoute
   '/admin/stats': typeof AdminStatsRoute
+  '/admin/tech': typeof AdminTechRoute
   '/admin/testimonials': typeof AdminTestimonialsRoute
   '/admin/': typeof AdminIndexRoute
 }
@@ -75,6 +82,7 @@ export interface FileRoutesByTo {
   '/admin/projects': typeof AdminProjectsRoute
   '/admin/services': typeof AdminServicesRoute
   '/admin/stats': typeof AdminStatsRoute
+  '/admin/tech': typeof AdminTechRoute
   '/admin/testimonials': typeof AdminTestimonialsRoute
   '/admin': typeof AdminIndexRoute
 }
@@ -86,6 +94,7 @@ export interface FileRoutesById {
   '/admin/projects': typeof AdminProjectsRoute
   '/admin/services': typeof AdminServicesRoute
   '/admin/stats': typeof AdminStatsRoute
+  '/admin/tech': typeof AdminTechRoute
   '/admin/testimonials': typeof AdminTestimonialsRoute
   '/admin/': typeof AdminIndexRoute
 }
@@ -98,6 +107,7 @@ export interface FileRouteTypes {
     | '/admin/projects'
     | '/admin/services'
     | '/admin/stats'
+    | '/admin/tech'
     | '/admin/testimonials'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
@@ -107,6 +117,7 @@ export interface FileRouteTypes {
     | '/admin/projects'
     | '/admin/services'
     | '/admin/stats'
+    | '/admin/tech'
     | '/admin/testimonials'
     | '/admin'
   id:
@@ -117,6 +128,7 @@ export interface FileRouteTypes {
     | '/admin/projects'
     | '/admin/services'
     | '/admin/stats'
+    | '/admin/tech'
     | '/admin/testimonials'
     | '/admin/'
   fileRoutesById: FileRoutesById
@@ -156,6 +168,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminTestimonialsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/tech': {
+      id: '/admin/tech'
+      path: '/tech'
+      fullPath: '/admin/tech'
+      preLoaderRoute: typeof AdminTechRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/stats': {
       id: '/admin/stats'
       path: '/stats'
@@ -192,6 +211,7 @@ interface AdminRouteChildren {
   AdminProjectsRoute: typeof AdminProjectsRoute
   AdminServicesRoute: typeof AdminServicesRoute
   AdminStatsRoute: typeof AdminStatsRoute
+  AdminTechRoute: typeof AdminTechRoute
   AdminTestimonialsRoute: typeof AdminTestimonialsRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
@@ -201,6 +221,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminProjectsRoute: AdminProjectsRoute,
   AdminServicesRoute: AdminServicesRoute,
   AdminStatsRoute: AdminStatsRoute,
+  AdminTechRoute: AdminTechRoute,
   AdminTestimonialsRoute: AdminTestimonialsRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
