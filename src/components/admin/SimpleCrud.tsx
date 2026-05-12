@@ -15,6 +15,15 @@ import {
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 
+// Dynamic table name access — bypass generated table-literal types.
+const db = supabase as unknown as {
+  from: (t: string) => {
+    insert: (v: Record<string, unknown>) => Promise<{ error: { message: string } | null }>;
+    update: (v: Record<string, unknown>) => { eq: (c: string, v: string) => Promise<{ error: { message: string } | null }> };
+    delete: () => { eq: (c: string, v: string) => Promise<{ error: { message: string } | null }> };
+  };
+};
+
 export interface ColumnDef<T> {
   label: string;
   render: (row: T) => ReactNode;
@@ -60,11 +69,11 @@ export function SimpleCrud<T extends { id: string }>({
     e.preventDefault();
     const payload = buildPayload(formState);
     if (editing) {
-      const { error } = await supabase.from(table).update(payload).eq("id", editing.id);
+      const { error } = await db.from(table).update(payload).eq("id", editing.id);
       if (error) return toast.error(error.message || "Failed to save");
       toast.success("Updated");
     } else {
-      const { error } = await supabase.from(table).insert(payload);
+      const { error } = await db.from(table).insert(payload);
       if (error) return toast.error(error.message || "Failed to add");
       toast.success("Created");
     }
@@ -75,7 +84,7 @@ export function SimpleCrud<T extends { id: string }>({
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
-    const { error } = await supabase.from(table).delete().eq("id", deleteTarget.id);
+    const { error } = await db.from(table).delete().eq("id", deleteTarget.id);
     if (error) toast.error(error.message || "Failed to delete");
     else toast.success("Deleted");
     setDeleteTarget(null);
