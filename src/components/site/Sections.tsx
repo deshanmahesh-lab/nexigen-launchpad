@@ -428,32 +428,27 @@ export function Certs() {
 
 /* ------------ CAREERS ------------ */
 export function Careers() {
-  const benefits = [
-    { e: "🌍", t: "Work Fully Remote", d: "From anywhere, on your schedule." },
-    { e: "💡", t: "Continuous Learning Budget", d: "Annual stipend for courses, books, and conferences." },
-    { e: "📈", t: "Equity Opportunities", d: "Own a piece of what you help build." },
-  ];
-  const roles = [
-    { t: "Senior React Developer", d: "Engineering" },
-    { t: "Node.js Backend Engineer", d: "Engineering" },
-    { t: "UI/UX Designer", d: "Design" },
-    { t: "DevOps Engineer", d: "Infrastructure" },
-  ];
+  const { data: cfg } = useConfig<{ description: string }>("careers_intro");
+  const { data: benefitsData } = useQuery({ queryKey: ["perks"], queryFn: fetchPerks });
+  const { data: rolesData } = useQuery({ queryKey: ["open_roles"], queryFn: fetchOpenRoles });
+  const benefits = benefitsData ?? [];
+  const roles = rolesData ?? [];
+  const description = cfg?.description ?? "";
   return (
     <section id="careers" className="relative py-28">
       <div className="mx-auto max-w-7xl px-6">
         <Reveal>
           <h2 className="font-display font-bold text-4xl md:text-6xl">Join the <span className="text-gradient">Team</span></h2>
-          <p className="mt-4 max-w-2xl text-[color:var(--text-muted)] text-lg">We're looking for engineers who want to build things that matter — remotely, flexibly, ambitiously.</p>
+          <p className="mt-4 max-w-2xl text-[color:var(--text-muted)] text-lg">{description}</p>
         </Reveal>
 
         <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-5">
           {benefits.map((b, i) => (
-            <Reveal key={b.t} delay={i * 70}>
+            <Reveal key={b.id} delay={i * 70}>
               <div className="glass rounded-2xl p-6 h-full hover:border-primary/40 transition-all">
-                <div className="text-3xl">{b.e}</div>
-                <div className="mt-3 font-display font-semibold text-lg">{b.t}</div>
-                <div className="text-[color:var(--text-muted)] mt-2 text-sm">{b.d}</div>
+                <div className="text-3xl">{b.emoji}</div>
+                <div className="mt-3 font-display font-semibold text-lg">{b.title}</div>
+                <div className="text-[color:var(--text-muted)] mt-2 text-sm">{b.description}</div>
               </div>
             </Reveal>
           ))}
@@ -463,13 +458,17 @@ export function Careers() {
           <h3 className="font-display text-2xl font-semibold mb-5">Open Roles</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {roles.map((r, i) => (
-              <Reveal key={r.t} delay={i * 60}>
+              <Reveal key={r.id} delay={i * 60}>
                 <div className="group flex items-center justify-between gap-4 glass rounded-xl p-5 hover:border-primary/40 transition-all">
                   <div>
-                    <div className="font-display font-semibold">{r.t}</div>
-                    <div className="text-xs text-[color:var(--text-muted)] mt-1">{r.d} • Full-time • Remote</div>
+                    <div className="font-display font-semibold">{r.title}</div>
+                    <div className="text-xs text-[color:var(--text-muted)] mt-1">
+                      {[r.department, r.type].filter(Boolean).join(" • ")}
+                    </div>
                   </div>
-                  <a href="#contact" className="inline-flex items-center gap-1 text-sm text-primary group-hover:gap-2 transition-all">Apply <ArrowRight className="h-4 w-4" /></a>
+                  <a href={r.apply_link || "#"} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary group-hover:gap-2 transition-all">
+                    Apply Now <ArrowRight className="h-4 w-4" />
+                  </a>
                 </div>
               </Reveal>
             ))}
