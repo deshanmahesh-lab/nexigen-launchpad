@@ -604,26 +604,36 @@ function Select({ label, name, options }: { label: string; name: string; options
 
 /* ------------ FOOTER ------------ */
 export function Footer() {
+  const { data: cfg } = useConfig<{
+    tagline: string; email: string; location: string; copyright: string;
+    linkedin: string; github: string; twitter: string; dribbble: string;
+  }>("footer");
+  const socials = [
+    { I: Linkedin, href: cfg?.linkedin || "#" },
+    { I: Github, href: cfg?.github || "#" },
+    { I: Twitter, href: cfg?.twitter || "#" },
+    { I: Dribbble, href: cfg?.dribbble || "#" },
+  ];
   return (
     <footer className="relative mt-10 bg-[#0A0E1A]">
       <div className="h-px bg-gradient-brand opacity-60" />
       <div className="mx-auto max-w-7xl px-6 py-16 grid grid-cols-2 md:grid-cols-4 gap-10">
         <div className="col-span-2 md:col-span-1">
           <div className="font-display font-bold text-xl text-gradient">NEXIGEN</div>
-          <p className="mt-3 text-sm text-[color:var(--text-muted)]">Engineering Tomorrow's Digital Foundations.</p>
+          <p className="mt-3 text-sm text-[color:var(--text-muted)]">{cfg?.tagline ?? ""}</p>
           <div className="mt-5 flex gap-3">
-            {[Linkedin, Github, Twitter, Dribbble].map((I, i) => (
-              <a key={i} aria-label="social" href="#" className="glass rounded-full p-2 hover:border-primary/40 transition-all"><I className="h-4 w-4" /></a>
+            {socials.map(({ I, href }, i) => (
+              <a key={i} aria-label="social" href={href} target="_blank" rel="noopener noreferrer" className="glass rounded-full p-2 hover:border-primary/40 transition-all"><I className="h-4 w-4" /></a>
             ))}
           </div>
         </div>
         <FooterCol title="Services" links={["Enterprise Software", "Cloud & DevOps", "AI Integration", "Mobile Apps", "UI/UX Design"]} />
         <FooterCol title="Company" links={["About", "Case Studies", "Careers", "Blog", "Press"]} />
-        <FooterCol title="Legal & Contact" links={["Privacy Policy", "Terms of Service", "hello@nexigen.io", "Colombo, Sri Lanka 🇱🇰"]} />
+        <FooterCol title="Legal & Contact" links={["Privacy Policy", "Terms of Service", cfg?.email ?? "", cfg?.location ?? ""].filter(Boolean)} />
       </div>
       <div className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-6 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-[color:var(--text-muted)]">
-          <span>© 2025 Nexigen (Pvt) Ltd. All rights reserved.</span>
+          <span>{cfg?.copyright ?? ""}</span>
           <span className="inline-flex items-center gap-2 glass rounded-full px-3 py-1"><Shield className="h-3 w-3 text-primary" /> ISO 27001 Certified</span>
         </div>
       </div>
