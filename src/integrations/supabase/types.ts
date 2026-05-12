@@ -14,6 +14,156 @@ export type Database = {
   }
   public: {
     Tables: {
+      blog_posts: {
+        Row: {
+          author: string
+          category: string
+          created_at: string
+          id: string
+          link: string
+          order_index: number
+          read_time: string
+          title: string
+        }
+        Insert: {
+          author?: string
+          category?: string
+          created_at?: string
+          id?: string
+          link?: string
+          order_index?: number
+          read_time?: string
+          title: string
+        }
+        Update: {
+          author?: string
+          category?: string
+          created_at?: string
+          id?: string
+          link?: string
+          order_index?: number
+          read_time?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      contact_messages: {
+        Row: {
+          company: string | null
+          created_at: string
+          email: string
+          id: string
+          message: string
+          name: string
+          project_type: string | null
+          read: boolean
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+          name: string
+          project_type?: string | null
+          read?: boolean
+        }
+        Update: {
+          company?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          project_type?: string | null
+          read?: boolean
+        }
+        Relationships: []
+      }
+      open_roles: {
+        Row: {
+          apply_link: string
+          created_at: string
+          department: string
+          id: string
+          order_index: number
+          title: string
+          type: string
+        }
+        Insert: {
+          apply_link?: string
+          created_at?: string
+          department?: string
+          id?: string
+          order_index?: number
+          title: string
+          type?: string
+        }
+        Update: {
+          apply_link?: string
+          created_at?: string
+          department?: string
+          id?: string
+          order_index?: number
+          title?: string
+          type?: string
+        }
+        Relationships: []
+      }
+      perks: {
+        Row: {
+          created_at: string
+          description: string
+          emoji: string
+          id: string
+          order_index: number
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          emoji?: string
+          id?: string
+          order_index?: number
+          title: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          emoji?: string
+          id?: string
+          order_index?: number
+          title?: string
+        }
+        Relationships: []
+      }
+      process_steps: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          number: string
+          order_index: number
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          number: string
+          order_index?: number
+          title: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          number?: string
+          order_index?: number
+          title?: string
+        }
+        Relationships: []
+      }
       projects: {
         Row: {
           category: string
@@ -160,6 +310,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      tech_stack: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          items: string[]
+          order_index: number
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          items?: string[]
+          order_index?: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          items?: string[]
+          order_index?: number
+        }
+        Relationships: []
       }
       testimonials: {
         Row: {

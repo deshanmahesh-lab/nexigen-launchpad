@@ -13,9 +13,13 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminTestimonialsRouteImport } from './routes/admin/testimonials'
+import { Route as AdminTechRouteImport } from './routes/admin/tech'
 import { Route as AdminStatsRouteImport } from './routes/admin/stats'
+import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
 import { Route as AdminServicesRouteImport } from './routes/admin/services'
 import { Route as AdminProjectsRouteImport } from './routes/admin/projects'
+import { Route as AdminProcessRouteImport } from './routes/admin/process'
+import { Route as AdminMessagesRouteImport } from './routes/admin/messages'
 
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
@@ -37,9 +41,19 @@ const AdminTestimonialsRoute = AdminTestimonialsRouteImport.update({
   path: '/testimonials',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminTechRoute = AdminTechRouteImport.update({
+  id: '/tech',
+  path: '/tech',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminStatsRoute = AdminStatsRouteImport.update({
   id: '/stats',
   path: '/stats',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminServicesRoute = AdminServicesRouteImport.update({
@@ -52,21 +66,39 @@ const AdminProjectsRoute = AdminProjectsRouteImport.update({
   path: '/projects',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminProcessRoute = AdminProcessRouteImport.update({
+  id: '/process',
+  path: '/process',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminMessagesRoute = AdminMessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/admin/messages': typeof AdminMessagesRoute
+  '/admin/process': typeof AdminProcessRoute
   '/admin/projects': typeof AdminProjectsRoute
   '/admin/services': typeof AdminServicesRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/stats': typeof AdminStatsRoute
+  '/admin/tech': typeof AdminTechRoute
   '/admin/testimonials': typeof AdminTestimonialsRoute
   '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin/messages': typeof AdminMessagesRoute
+  '/admin/process': typeof AdminProcessRoute
   '/admin/projects': typeof AdminProjectsRoute
   '/admin/services': typeof AdminServicesRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/stats': typeof AdminStatsRoute
+  '/admin/tech': typeof AdminTechRoute
   '/admin/testimonials': typeof AdminTestimonialsRoute
   '/admin': typeof AdminIndexRoute
 }
@@ -74,9 +106,13 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/admin/messages': typeof AdminMessagesRoute
+  '/admin/process': typeof AdminProcessRoute
   '/admin/projects': typeof AdminProjectsRoute
   '/admin/services': typeof AdminServicesRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/stats': typeof AdminStatsRoute
+  '/admin/tech': typeof AdminTechRoute
   '/admin/testimonials': typeof AdminTestimonialsRoute
   '/admin/': typeof AdminIndexRoute
 }
@@ -85,26 +121,38 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/admin/messages'
+    | '/admin/process'
     | '/admin/projects'
     | '/admin/services'
+    | '/admin/settings'
     | '/admin/stats'
+    | '/admin/tech'
     | '/admin/testimonials'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin/messages'
+    | '/admin/process'
     | '/admin/projects'
     | '/admin/services'
+    | '/admin/settings'
     | '/admin/stats'
+    | '/admin/tech'
     | '/admin/testimonials'
     | '/admin'
   id:
     | '__root__'
     | '/'
     | '/admin'
+    | '/admin/messages'
+    | '/admin/process'
     | '/admin/projects'
     | '/admin/services'
+    | '/admin/settings'
     | '/admin/stats'
+    | '/admin/tech'
     | '/admin/testimonials'
     | '/admin/'
   fileRoutesById: FileRoutesById
@@ -144,11 +192,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminTestimonialsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/tech': {
+      id: '/admin/tech'
+      path: '/tech'
+      fullPath: '/admin/tech'
+      preLoaderRoute: typeof AdminTechRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/stats': {
       id: '/admin/stats'
       path: '/stats'
       fullPath: '/admin/stats'
       preLoaderRoute: typeof AdminStatsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/services': {
@@ -165,21 +227,43 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProjectsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/process': {
+      id: '/admin/process'
+      path: '/process'
+      fullPath: '/admin/process'
+      preLoaderRoute: typeof AdminProcessRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/messages': {
+      id: '/admin/messages'
+      path: '/messages'
+      fullPath: '/admin/messages'
+      preLoaderRoute: typeof AdminMessagesRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
 interface AdminRouteChildren {
+  AdminMessagesRoute: typeof AdminMessagesRoute
+  AdminProcessRoute: typeof AdminProcessRoute
   AdminProjectsRoute: typeof AdminProjectsRoute
   AdminServicesRoute: typeof AdminServicesRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
   AdminStatsRoute: typeof AdminStatsRoute
+  AdminTechRoute: typeof AdminTechRoute
   AdminTestimonialsRoute: typeof AdminTestimonialsRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminMessagesRoute: AdminMessagesRoute,
+  AdminProcessRoute: AdminProcessRoute,
   AdminProjectsRoute: AdminProjectsRoute,
   AdminServicesRoute: AdminServicesRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
   AdminStatsRoute: AdminStatsRoute,
+  AdminTechRoute: AdminTechRoute,
   AdminTestimonialsRoute: AdminTestimonialsRoute,
   AdminIndexRoute: AdminIndexRoute,
 }

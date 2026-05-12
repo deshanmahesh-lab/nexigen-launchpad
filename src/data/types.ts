@@ -46,3 +46,56 @@ export interface SiteConfig {
   key: string;
   value: Record<string, unknown>;
 }
+
+export interface ProcessStep {
+  id: string;
+  number: string;
+  title: string;
+  description: string;
+  order_index: number;
+}
+
+export interface TechGroup {
+  id: string;
+  category: string;
+  items: string[];
+  order_index: number;
+}
+
+export interface Perk {
+  id: string;
+  emoji: string;
+  title: string;
+  description: string;
+  order_index: number;
+}
+
+export interface OpenRole {
+  id: string;
+  title: string;
+  department: string;
+  type: string;
+  apply_link: string;
+  order_index: number;
+}
+
+export interface BlogPost {
+  id: string;
+  category: string;
+  title: string;
+  author: string;
+  read_time: string;
+  link: string;
+  order_index: number;
+}
+
+export interface ContactMessage {
+  id: string;
+  name: string;
+  company: string | null;
+  email: string;
+  project_type: string | null;
+  message: string;
+  read: boolean;
+  created_at: string;
+}

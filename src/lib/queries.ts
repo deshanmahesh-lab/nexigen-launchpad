@@ -1,5 +1,8 @@
 import { supabase } from "@/lib/supabase";
-import type { Service, Project, Testimonial, Stat, SiteConfig } from "@/data/types";
+import type {
+  Service, Project, Testimonial, Stat, SiteConfig,
+  ProcessStep, TechGroup, Perk, OpenRole, BlogPost,
+} from "@/data/types";
 
 const SERVICE_COLS = "id,title,description,icon,span,order_index,status,original_id";
 const PROJECT_COLS = "id,name,category,problem,stack,metric,gradient,status,original_id,created_at";
@@ -147,4 +150,35 @@ export async function fetchSiteConfig(key: string): Promise<SiteConfig | null> {
   }
   if (!data) return null;
   return { key: data.key, value: data.value as Record<string, unknown> };
+}
+
+/* ---------- New CMS sections ---------- */
+export async function fetchProcessSteps(): Promise<ProcessStep[]> {
+  const { data, error } = await supabase.from("process_steps").select("*").order("order_index");
+  if (error) { console.error("fetchProcessSteps", error); return []; }
+  return (data ?? []) as ProcessStep[];
+}
+
+export async function fetchTechStack(): Promise<TechGroup[]> {
+  const { data, error } = await supabase.from("tech_stack").select("*").order("order_index");
+  if (error) { console.error("fetchTechStack", error); return []; }
+  return (data ?? []) as TechGroup[];
+}
+
+export async function fetchPerks(): Promise<Perk[]> {
+  const { data, error } = await supabase.from("perks").select("*").order("order_index");
+  if (error) { console.error("fetchPerks", error); return []; }
+  return (data ?? []) as Perk[];
+}
+
+export async function fetchOpenRoles(): Promise<OpenRole[]> {
+  const { data, error } = await supabase.from("open_roles").select("*").order("order_index");
+  if (error) { console.error("fetchOpenRoles", error); return []; }
+  return (data ?? []) as OpenRole[];
+}
+
+export async function fetchBlogPosts(): Promise<BlogPost[]> {
+  const { data, error } = await supabase.from("blog_posts").select("*").order("order_index");
+  if (error) { console.error("fetchBlogPosts", error); return []; }
+  return (data ?? []) as BlogPost[];
 }

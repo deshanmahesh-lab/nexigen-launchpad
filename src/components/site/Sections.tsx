@@ -1,4 +1,4 @@
-import { ArrowRight, Code2, Cloud, Brain, Smartphone, Plug, Palette, Shield, CheckCircle2, Globe2, Sparkles, Github, Linkedin, Twitter, Dribbble, Mail, MapPin, Clock, Star, Quote } from "lucide-react";
+import { ArrowRight, Code2, Cloud, Brain, Smartphone, Plug, Palette, Shield, CheckCircle2, Globe2, Sparkles, Github, Linkedin, Twitter, Dribbble, Mail, MapPin, Clock, Phone, Star, Quote } from "lucide-react";
 import { Reveal } from "./Reveal";
 import { Counter } from "./Counter";
 import { useState } from "react";
@@ -6,17 +6,56 @@ import { useQuery } from "@tanstack/react-query";
 import {
   fetchServices, fetchProjects, fetchStats, fetchTestimonials,
   fetchServicesPreview, fetchProjectsPreview, fetchStatsPreview, fetchTestimonialsPreview,
+  fetchSiteConfig, fetchProcessSteps, fetchTechStack, fetchPerks, fetchOpenRoles, fetchBlogPosts,
 } from "@/lib/queries";
 import { usePreview } from "@/lib/preview-context";
 import { Skeleton } from "@/components/ui/skeleton";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import type { LucideIcon } from "lucide-react";
 
 const ICONS: Record<string, LucideIcon> = {
   Code2, Cloud, Brain, Smartphone, Plug, Palette, Shield, CheckCircle2, Globe2, Sparkles,
 };
 
+function useConfig<T = Record<string, unknown>>(key: string) {
+  return useQuery({
+    queryKey: ["site_config", key],
+    queryFn: async () => (await fetchSiteConfig(key))?.value as T | undefined,
+  });
+}
+
+/** Render title with last word(s) highlighted by wrapping in **double asterisks**, or fallback to last word. */
+function renderHighlight(title: string) {
+  const match = title.match(/^(.*?)\*\*(.+?)\*\*(.*)$/);
+  if (match) {
+    return (
+      <>
+        {match[1]}
+        <span className="text-gradient">{match[2]}</span>
+        {match[3]}
+      </>
+    );
+  }
+  const words = title.split(" ");
+  if (words.length < 2) return <>{title}</>;
+  const last = words.pop();
+  return (
+    <>
+      {words.join(" ")} <span className="text-gradient">{last}</span>
+    </>
+  );
+}
+
 /* ------------ HERO ------------ */
 export function Hero() {
+  const { data: cfg } = useConfig<{
+    badge: string; title_line1: string; title_line2: string; description: string;
+  }>("hero");
+  const badge = cfg?.badge ?? "Engineering Tomorrow's Digital Foundations";
+  const line1 = cfg?.title_line1 ?? "We Engineer Software";
+  const line2 = cfg?.title_line2 ?? "That Scales Globally.";
+  const description = cfg?.description ?? "";
   return (
     <section id="top" className="relative min-h-[100svh] flex items-center justify-center overflow-hidden pt-24 pb-16">
       <div className="orb animate-orb-1" style={{ top: "-100px", left: "-100px", width: 600, height: 600, background: "rgba(124,196,232,0.18)", filter: "blur(120px)" }} />
@@ -27,14 +66,14 @@ export function Hero() {
       <div className="relative mx-auto max-w-6xl px-6 text-center">
         <div className="inline-flex items-center gap-2 rounded-full glass px-4 py-1.5 text-xs font-mono mb-8 animate-fade-up">
           <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-          Engineering Tomorrow's Digital Foundations
+          {badge}
         </div>
         <h1 className="font-display font-bold text-5xl sm:text-6xl md:text-7xl lg:text-[88px] leading-[1.02] tracking-tight animate-fade-up" style={{ animationDelay: "0.05s" }}>
-          We Engineer Software <br className="hidden md:block" />
-          That <span className="text-gradient">Scales Globally.</span>
+          {line1} <br className="hidden md:block" />
+          <span className="text-gradient">{line2}</span>
         </h1>
         <p className="mt-6 max-w-2xl mx-auto text-lg md:text-xl text-[color:var(--text-muted)] animate-fade-up" style={{ animationDelay: "0.3s" }}>
-          Nexigen builds custom enterprise software, cloud infrastructure, and AI-integrated platforms for businesses worldwide — from Colombo to California.
+          {description}
         </p>
         <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center animate-fade-up" style={{ animationDelay: "0.5s" }}>
           <a href="#contact" className="inline-flex items-center justify-center gap-2 rounded-full px-7 py-4 text-base font-semibold bg-gradient-brand text-primary-foreground hover:scale-[1.03] hover:shadow-[0_0_50px_-8px_rgba(139,110,196,0.7)] transition-all">
@@ -117,12 +156,8 @@ export function Services() {
 
 /* ------------ PROCESS ------------ */
 export function Process() {
-  const steps = [
-    { n: "01", t: "Discovery", d: "We learn your business goals and constraints." },
-    { n: "02", t: "Architecture", d: "We design a scalable technical blueprint." },
-    { n: "03", t: "Build & Iterate", d: "Agile sprints with weekly demos." },
-    { n: "04", t: "Deploy & Scale", d: "CI/CD pipelines, monitoring, support." },
-  ];
+  const { data } = useQuery({ queryKey: ["process_steps"], queryFn: fetchProcessSteps });
+  const steps = data ?? [];
   return (
     <section className="relative py-28 bg-[color:var(--surface)]/40">
       <div className="mx-auto max-w-7xl px-6">
@@ -130,13 +165,13 @@ export function Process() {
         <div className="mt-16 grid grid-cols-1 md:grid-cols-4 gap-6 relative">
           <div className="hidden md:block absolute top-7 left-[12%] right-[12%] border-t-2 border-dashed border-primary/30" />
           {steps.map((s, i) => (
-            <Reveal key={s.n} delay={i * 120}>
+            <Reveal key={s.id} delay={i * 120}>
               <div className="relative">
                 <div className="h-14 w-14 rounded-full glass-strong flex items-center justify-center font-display font-bold text-lg bg-gradient-brand/10 border-primary/30">
-                  <span className="text-gradient">{s.n}</span>
+                  <span className="text-gradient">{s.number}</span>
                 </div>
-                <h3 className="mt-5 font-display text-xl font-semibold">{s.t}</h3>
-                <p className="mt-2 text-[color:var(--text-muted)]">{s.d}</p>
+                <h3 className="mt-5 font-display text-xl font-semibold">{s.title}</h3>
+                <p className="mt-2 text-[color:var(--text-muted)]">{s.description}</p>
               </div>
             </Reveal>
           ))}
@@ -242,13 +277,8 @@ export function Work() {
 
 /* ------------ TECH STACK ------------ */
 export function TechStack() {
-  const groups = [
-    { c: "Frontend", items: ["React", "Next.js", "Vue.js", "TypeScript"] },
-    { c: "Backend", items: ["Node.js", "Python", "Go", "Laravel"] },
-    { c: "Cloud", items: ["AWS", "GCP", "Docker", "Kubernetes"] },
-    { c: "Data", items: ["PostgreSQL", "MongoDB", "Redis", "Elasticsearch"] },
-    { c: "AI/ML", items: ["TensorFlow", "PyTorch", "OpenAI APIs", "LangChain"] },
-  ];
+  const { data } = useQuery({ queryKey: ["tech_stack"], queryFn: fetchTechStack });
+  const groups = data ?? [];
   return (
     <section className="relative py-28 bg-[color:var(--surface)]/40">
       <div className="mx-auto max-w-7xl px-6">
@@ -257,9 +287,9 @@ export function TechStack() {
         </Reveal>
         <div className="mt-14 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {groups.map((g, i) => (
-            <Reveal key={g.c} delay={i * 60}>
+            <Reveal key={g.id} delay={i * 60}>
               <div className="rounded-2xl glass p-6 h-full hover:border-primary/40 transition-all">
-                <div className="text-xs font-mono uppercase tracking-widest text-primary mb-4">{g.c}</div>
+                <div className="text-xs font-mono uppercase tracking-widest text-primary mb-4">{g.category}</div>
                 <div className="grid grid-cols-2 gap-3">
                   {g.items.map((t) => (
                     <div key={t} className="flex items-center gap-2 rounded-lg bg-[color:var(--surface-2)] px-3 py-2 text-sm border border-border">
@@ -316,17 +346,18 @@ export function Testimonials() {
 
 /* ------------ ABOUT ------------ */
 export function About() {
+  const { data: cfg } = useConfig<{ title: string; paragraphs: string[] }>("about");
+  const title = cfg?.title ?? "Built in Sri Lanka. Built for the World.";
+  const paragraphs = cfg?.paragraphs ?? [];
   return (
     <section id="about" className="relative py-28 bg-[color:var(--surface)]/40">
       <div className="mx-auto max-w-7xl px-6 grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
         <Reveal>
           <h2 className="font-display font-bold text-4xl md:text-5xl leading-tight">
-            Built in Sri Lanka. <br /> Built for the <span className="text-gradient">World.</span>
+            {renderHighlight(title)}
           </h2>
           <div className="mt-6 space-y-4 text-[color:var(--text-muted)] leading-relaxed">
-            <p>We started Nexigen with one belief: world-class software engineering shouldn't be limited by geography.</p>
-            <p>Based in Sri Lanka — one of Asia's fastest-growing tech ecosystems — we combine elite engineering talent with global delivery standards to build software that competes at the highest level.</p>
-            <p>From regulated FinTech platforms to AI-powered SaaS, we partner with ambitious teams shipping ambitious products.</p>
+            {paragraphs.map((p, i) => <p key={i}>{p}</p>)}
           </div>
           <div className="mt-7 flex flex-wrap gap-2">
             {["Radical Transparency", "Engineering Excellence", "Client Obsession", "Continuous Learning"].map((v) => (
@@ -363,6 +394,8 @@ export function About() {
 
 /* ------------ CERTIFICATIONS ------------ */
 export function Certs() {
+  const { data: cfg } = useConfig<{ title: string }>("certs");
+  const title = cfg?.title ?? "Globally Certified. Enterprise Ready.";
   const certs = [
     { i: Shield, t: "ISO/IEC 27001", d: "Information security management" },
     { i: CheckCircle2, t: "SOC 2 Type II", d: "Audited security controls" },
@@ -375,7 +408,7 @@ export function Certs() {
       <div className="orb" style={{ top: "20%", left: "30%", width: 500, height: 500, background: "rgba(139,110,196,0.12)", filter: "blur(140px)" }} />
       <div className="relative mx-auto max-w-7xl px-6 text-center">
         <Reveal>
-          <h2 className="font-display font-bold text-4xl md:text-5xl">Globally Certified. <span className="text-gradient">Enterprise Ready.</span></h2>
+          <h2 className="font-display font-bold text-4xl md:text-5xl">{renderHighlight(title)}</h2>
         </Reveal>
         <div className="mt-12 flex flex-wrap justify-center gap-4">
           {certs.map((c, i) => (
@@ -395,32 +428,27 @@ export function Certs() {
 
 /* ------------ CAREERS ------------ */
 export function Careers() {
-  const benefits = [
-    { e: "🌍", t: "Work Fully Remote", d: "From anywhere, on your schedule." },
-    { e: "💡", t: "Continuous Learning Budget", d: "Annual stipend for courses, books, and conferences." },
-    { e: "📈", t: "Equity Opportunities", d: "Own a piece of what you help build." },
-  ];
-  const roles = [
-    { t: "Senior React Developer", d: "Engineering" },
-    { t: "Node.js Backend Engineer", d: "Engineering" },
-    { t: "UI/UX Designer", d: "Design" },
-    { t: "DevOps Engineer", d: "Infrastructure" },
-  ];
+  const { data: cfg } = useConfig<{ description: string }>("careers_intro");
+  const { data: benefitsData } = useQuery({ queryKey: ["perks"], queryFn: fetchPerks });
+  const { data: rolesData } = useQuery({ queryKey: ["open_roles"], queryFn: fetchOpenRoles });
+  const benefits = benefitsData ?? [];
+  const roles = rolesData ?? [];
+  const description = cfg?.description ?? "";
   return (
     <section id="careers" className="relative py-28">
       <div className="mx-auto max-w-7xl px-6">
         <Reveal>
           <h2 className="font-display font-bold text-4xl md:text-6xl">Join the <span className="text-gradient">Team</span></h2>
-          <p className="mt-4 max-w-2xl text-[color:var(--text-muted)] text-lg">We're looking for engineers who want to build things that matter — remotely, flexibly, ambitiously.</p>
+          <p className="mt-4 max-w-2xl text-[color:var(--text-muted)] text-lg">{description}</p>
         </Reveal>
 
         <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-5">
           {benefits.map((b, i) => (
-            <Reveal key={b.t} delay={i * 70}>
+            <Reveal key={b.id} delay={i * 70}>
               <div className="glass rounded-2xl p-6 h-full hover:border-primary/40 transition-all">
-                <div className="text-3xl">{b.e}</div>
-                <div className="mt-3 font-display font-semibold text-lg">{b.t}</div>
-                <div className="text-[color:var(--text-muted)] mt-2 text-sm">{b.d}</div>
+                <div className="text-3xl">{b.emoji}</div>
+                <div className="mt-3 font-display font-semibold text-lg">{b.title}</div>
+                <div className="text-[color:var(--text-muted)] mt-2 text-sm">{b.description}</div>
               </div>
             </Reveal>
           ))}
@@ -430,13 +458,17 @@ export function Careers() {
           <h3 className="font-display text-2xl font-semibold mb-5">Open Roles</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {roles.map((r, i) => (
-              <Reveal key={r.t} delay={i * 60}>
+              <Reveal key={r.id} delay={i * 60}>
                 <div className="group flex items-center justify-between gap-4 glass rounded-xl p-5 hover:border-primary/40 transition-all">
                   <div>
-                    <div className="font-display font-semibold">{r.t}</div>
-                    <div className="text-xs text-[color:var(--text-muted)] mt-1">{r.d} • Full-time • Remote</div>
+                    <div className="font-display font-semibold">{r.title}</div>
+                    <div className="text-xs text-[color:var(--text-muted)] mt-1">
+                      {[r.department, r.type].filter(Boolean).join(" • ")}
+                    </div>
                   </div>
-                  <a href="#contact" className="inline-flex items-center gap-1 text-sm text-primary group-hover:gap-2 transition-all">Apply <ArrowRight className="h-4 w-4" /></a>
+                  <a href={r.apply_link || "#"} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary group-hover:gap-2 transition-all">
+                    Apply Now <ArrowRight className="h-4 w-4" />
+                  </a>
                 </div>
               </Reveal>
             ))}
@@ -452,26 +484,24 @@ export function Careers() {
 
 /* ------------ BLOG ------------ */
 export function Blog() {
-  const posts = [
-    { c: "Tech Architecture", t: "Building Scalable Multi-Tenant SaaS on AWS", r: "8 min read" },
-    { c: "Industry", t: "Why Sri Lanka is Becoming Asia's Next Dev Hub", r: "5 min read" },
-    { c: "Business", t: "The Hidden Costs of Offshore Development (And How We Solved Them)", r: "6 min read" },
-  ];
+  const { data } = useQuery({ queryKey: ["blog_posts"], queryFn: fetchBlogPosts });
+  const posts = data ?? [];
   return (
     <section id="blog" className="relative py-28 bg-[color:var(--surface)]/40">
       <div className="mx-auto max-w-7xl px-6">
         <Reveal><h2 className="font-display font-bold text-4xl md:text-6xl">From Our <span className="text-gradient">Engineers</span></h2></Reveal>
         <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
           {posts.map((p, i) => (
-            <Reveal key={p.t} delay={i * 80}>
+            <Reveal key={p.id} delay={i * 80}>
               <article className="rounded-2xl glass overflow-hidden hover:-translate-y-1 hover:border-primary/40 transition-all h-full flex flex-col">
                 <div className="h-36 bg-gradient-to-br from-[#7CC4E8]/25 to-[#8B6EC4]/25 dot-pattern" />
                 <div className="p-6 flex flex-col flex-1">
-                  <span className="text-xs rounded-full glass px-3 py-1 self-start">{p.c}</span>
-                  <h3 className="mt-4 font-display text-lg font-semibold leading-snug">{p.t}</h3>
+                  <span className="text-xs rounded-full glass px-3 py-1 self-start">{p.category}</span>
+                  <h3 className="mt-4 font-display text-lg font-semibold leading-snug">{p.title}</h3>
+                  {p.author && <div className="mt-2 text-xs text-[color:var(--text-muted)]">By {p.author}</div>}
                   <div className="mt-auto pt-5 flex items-center justify-between text-sm">
-                    <span className="text-[color:var(--text-muted)]">{p.r}</span>
-                    <a href="#" className="text-primary inline-flex items-center gap-1 hover:gap-2 transition-all">Read Article <ArrowRight className="h-4 w-4" /></a>
+                    <span className="text-[color:var(--text-muted)]">{p.read_time}</span>
+                    <a href={p.link || "#"} target="_blank" rel="noopener noreferrer" className="text-primary inline-flex items-center gap-1 hover:gap-2 transition-all">Read Article <ArrowRight className="h-4 w-4" /></a>
                   </div>
                 </div>
               </article>
@@ -485,6 +515,35 @@ export function Blog() {
 
 /* ------------ CONTACT ------------ */
 export function Contact() {
+  const { data: cfg } = useConfig<{ email: string; phone: string; location: string; hours: string }>("contact_info");
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const fd = new FormData(form);
+    const payload = {
+      name: String(fd.get("name") ?? "").trim().slice(0, 120),
+      company: (String(fd.get("company") ?? "").trim() || null)?.slice(0, 120) ?? null,
+      email: String(fd.get("email") ?? "").trim().slice(0, 255),
+      project_type: (String(fd.get("project_type") ?? "").trim() || null),
+      message: String(fd.get("message") ?? "").trim().slice(0, 4000),
+    };
+    if (!payload.name || !payload.email || !payload.message) {
+      toast.error("Please fill in name, email, and message.");
+      return;
+    }
+    setSubmitting(true);
+    const { error } = await supabase.from("contact_messages").insert(payload);
+    setSubmitting(false);
+    if (error) {
+      toast.error("Failed to send. Please try again.");
+      return;
+    }
+    toast.success("Thanks — we'll be in touch within 24 hours.");
+    form.reset();
+  };
+
   return (
     <section id="contact" className="relative py-28 overflow-hidden">
       <div className="orb" style={{ top: "10%", left: "5%", width: 500, height: 500, background: "rgba(124,196,232,0.18)", filter: "blur(130px)" }} />
@@ -496,28 +555,28 @@ export function Contact() {
         </Reveal>
 
         <Reveal delay={150}>
-          <form onSubmit={(e) => { e.preventDefault(); alert("Thanks — we'll be in touch within 24 hours."); }} className="mt-12 glass-strong rounded-3xl p-6 md:p-10 text-left space-y-4">
+          <form onSubmit={handleSubmit} className="mt-12 glass-strong rounded-3xl p-6 md:p-10 text-left space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input label="Name" name="name" required />
               <Input label="Company" name="company" />
               <Input label="Email" name="email" type="email" required />
               <Select label="Project Type" name="project_type" options={["Web Application", "Mobile App", "Enterprise Software", "Cloud Infrastructure", "AI Integration", "Other"]} />
-              <Select label="Budget Range" name="budget" options={["$5k–$15k", "$15k–$50k", "$50k–$150k", "$150k+"]} />
             </div>
             <div>
               <label className="text-xs font-mono uppercase tracking-widest text-[color:var(--text-muted)]">Message</label>
               <textarea name="message" rows={5} required className="mt-2 w-full rounded-xl bg-[color:var(--surface-2)] border border-border px-4 py-3 text-foreground outline-none focus:border-primary/60 transition" />
             </div>
-            <button type="submit" className="w-full md:w-auto inline-flex items-center justify-center gap-2 rounded-full px-7 py-4 text-base font-semibold bg-gradient-brand text-primary-foreground hover:scale-[1.02] hover:shadow-[0_0_40px_-8px_rgba(139,110,196,0.7)] transition-all">
-              Send Message <ArrowRight className="h-5 w-5" />
+            <button type="submit" disabled={submitting} className="w-full md:w-auto inline-flex items-center justify-center gap-2 rounded-full px-7 py-4 text-base font-semibold bg-gradient-brand text-primary-foreground hover:scale-[1.02] hover:shadow-[0_0_40px_-8px_rgba(139,110,196,0.7)] transition-all disabled:opacity-60 disabled:hover:scale-100">
+              {submitting ? "Sending…" : <>Send Message <ArrowRight className="h-5 w-5" /></>}
             </button>
           </form>
         </Reveal>
 
         <div className="mt-10 flex flex-wrap justify-center gap-3 text-sm">
-          <span className="inline-flex items-center gap-2 glass rounded-full px-4 py-2"><Mail className="h-4 w-4 text-primary" /> hello@nexigen.io</span>
-          <span className="inline-flex items-center gap-2 glass rounded-full px-4 py-2"><MapPin className="h-4 w-4 text-primary" /> Colombo, Sri Lanka</span>
-          <span className="inline-flex items-center gap-2 glass rounded-full px-4 py-2"><Clock className="h-4 w-4 text-primary" /> Mon–Fri, 9am–6pm IST</span>
+          {cfg?.email && <span className="inline-flex items-center gap-2 glass rounded-full px-4 py-2"><Mail className="h-4 w-4 text-primary" /> {cfg.email}</span>}
+          {cfg?.phone && <span className="inline-flex items-center gap-2 glass rounded-full px-4 py-2"><Phone className="h-4 w-4 text-primary" /> {cfg.phone}</span>}
+          {cfg?.location && <span className="inline-flex items-center gap-2 glass rounded-full px-4 py-2"><MapPin className="h-4 w-4 text-primary" /> {cfg.location}</span>}
+          {cfg?.hours && <span className="inline-flex items-center gap-2 glass rounded-full px-4 py-2"><Clock className="h-4 w-4 text-primary" /> {cfg.hours}</span>}
         </div>
       </div>
     </section>
@@ -545,26 +604,36 @@ function Select({ label, name, options }: { label: string; name: string; options
 
 /* ------------ FOOTER ------------ */
 export function Footer() {
+  const { data: cfg } = useConfig<{
+    tagline: string; email: string; location: string; copyright: string;
+    linkedin: string; github: string; twitter: string; dribbble: string;
+  }>("footer");
+  const socials = [
+    { I: Linkedin, href: cfg?.linkedin || "#" },
+    { I: Github, href: cfg?.github || "#" },
+    { I: Twitter, href: cfg?.twitter || "#" },
+    { I: Dribbble, href: cfg?.dribbble || "#" },
+  ];
   return (
     <footer className="relative mt-10 bg-[#0A0E1A]">
       <div className="h-px bg-gradient-brand opacity-60" />
       <div className="mx-auto max-w-7xl px-6 py-16 grid grid-cols-2 md:grid-cols-4 gap-10">
         <div className="col-span-2 md:col-span-1">
           <div className="font-display font-bold text-xl text-gradient">NEXIGEN</div>
-          <p className="mt-3 text-sm text-[color:var(--text-muted)]">Engineering Tomorrow's Digital Foundations.</p>
+          <p className="mt-3 text-sm text-[color:var(--text-muted)]">{cfg?.tagline ?? ""}</p>
           <div className="mt-5 flex gap-3">
-            {[Linkedin, Github, Twitter, Dribbble].map((I, i) => (
-              <a key={i} aria-label="social" href="#" className="glass rounded-full p-2 hover:border-primary/40 transition-all"><I className="h-4 w-4" /></a>
+            {socials.map(({ I, href }, i) => (
+              <a key={i} aria-label="social" href={href} target="_blank" rel="noopener noreferrer" className="glass rounded-full p-2 hover:border-primary/40 transition-all"><I className="h-4 w-4" /></a>
             ))}
           </div>
         </div>
         <FooterCol title="Services" links={["Enterprise Software", "Cloud & DevOps", "AI Integration", "Mobile Apps", "UI/UX Design"]} />
         <FooterCol title="Company" links={["About", "Case Studies", "Careers", "Blog", "Press"]} />
-        <FooterCol title="Legal & Contact" links={["Privacy Policy", "Terms of Service", "hello@nexigen.io", "Colombo, Sri Lanka 🇱🇰"]} />
+        <FooterCol title="Legal & Contact" links={["Privacy Policy", "Terms of Service", cfg?.email ?? "", cfg?.location ?? ""].filter(Boolean)} />
       </div>
       <div className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-6 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-[color:var(--text-muted)]">
-          <span>© 2025 Nexigen (Pvt) Ltd. All rights reserved.</span>
+          <span>{cfg?.copyright ?? ""}</span>
           <span className="inline-flex items-center gap-2 glass rounded-full px-3 py-1"><Shield className="h-3 w-3 text-primary" /> ISO 27001 Certified</span>
         </div>
       </div>
