@@ -24,7 +24,10 @@ function useConfigSection<T extends ConfigValue>(key: string) {
 async function saveSection(key: string, value: ConfigValue) {
   const { error } = await supabase
     .from("site_config")
-    .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: "key" });
+    .upsert(
+      { key, value: value as never, updated_at: new Date().toISOString() },
+      { onConflict: "key" },
+    );
   return error;
 }
 
