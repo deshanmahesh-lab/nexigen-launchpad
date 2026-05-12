@@ -25,6 +25,28 @@ function useConfig<T = Record<string, unknown>>(key: string) {
   });
 }
 
+/** Render title with last word(s) highlighted by wrapping in **double asterisks**, or fallback to last word. */
+function renderHighlight(title: string) {
+  const match = title.match(/^(.*?)\*\*(.+?)\*\*(.*)$/);
+  if (match) {
+    return (
+      <>
+        {match[1]}
+        <span className="text-gradient">{match[2]}</span>
+        {match[3]}
+      </>
+    );
+  }
+  const words = title.split(" ");
+  if (words.length < 2) return <>{title}</>;
+  const last = words.pop();
+  return (
+    <>
+      {words.join(" ")} <span className="text-gradient">{last}</span>
+    </>
+  );
+}
+
 /* ------------ HERO ------------ */
 export function Hero() {
   const { data: cfg } = useConfig<{
