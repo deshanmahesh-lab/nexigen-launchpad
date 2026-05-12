@@ -16,6 +16,7 @@ import { Route as AdminTestimonialsRouteImport } from './routes/admin/testimonia
 import { Route as AdminStatsRouteImport } from './routes/admin/stats'
 import { Route as AdminServicesRouteImport } from './routes/admin/services'
 import { Route as AdminProjectsRouteImport } from './routes/admin/projects'
+import { Route as AdminProcessRouteImport } from './routes/admin/process'
 
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
@@ -52,10 +53,16 @@ const AdminProjectsRoute = AdminProjectsRouteImport.update({
   path: '/projects',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminProcessRoute = AdminProcessRouteImport.update({
+  id: '/process',
+  path: '/process',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/admin/process': typeof AdminProcessRoute
   '/admin/projects': typeof AdminProjectsRoute
   '/admin/services': typeof AdminServicesRoute
   '/admin/stats': typeof AdminStatsRoute
@@ -64,6 +71,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin/process': typeof AdminProcessRoute
   '/admin/projects': typeof AdminProjectsRoute
   '/admin/services': typeof AdminServicesRoute
   '/admin/stats': typeof AdminStatsRoute
@@ -74,6 +82,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/admin/process': typeof AdminProcessRoute
   '/admin/projects': typeof AdminProjectsRoute
   '/admin/services': typeof AdminServicesRoute
   '/admin/stats': typeof AdminStatsRoute
@@ -85,6 +94,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/admin/process'
     | '/admin/projects'
     | '/admin/services'
     | '/admin/stats'
@@ -93,6 +103,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin/process'
     | '/admin/projects'
     | '/admin/services'
     | '/admin/stats'
@@ -102,6 +113,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/admin/process'
     | '/admin/projects'
     | '/admin/services'
     | '/admin/stats'
@@ -165,10 +177,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProjectsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/process': {
+      id: '/admin/process'
+      path: '/process'
+      fullPath: '/admin/process'
+      preLoaderRoute: typeof AdminProcessRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
 interface AdminRouteChildren {
+  AdminProcessRoute: typeof AdminProcessRoute
   AdminProjectsRoute: typeof AdminProjectsRoute
   AdminServicesRoute: typeof AdminServicesRoute
   AdminStatsRoute: typeof AdminStatsRoute
@@ -177,6 +197,7 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminProcessRoute: AdminProcessRoute,
   AdminProjectsRoute: AdminProjectsRoute,
   AdminServicesRoute: AdminServicesRoute,
   AdminStatsRoute: AdminStatsRoute,
@@ -193,3 +214,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
