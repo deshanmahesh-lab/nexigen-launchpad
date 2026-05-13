@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -47,6 +48,7 @@ const NAV = [
   { to: "/admin/blog", label: "Blog Posts", icon: BookOpen },
   { to: "/admin/stats", label: "Stats", icon: BarChart3 },
   { to: "/admin/messages", label: "Messages", icon: Inbox },
+  { to: "/admin/chats", label: "Client Chats", icon: MessageSquareQuote },
 ] as const;
 
 function AdminLayout() {
@@ -54,6 +56,7 @@ function AdminLayout() {
   const [authed, setAuthed] = useState(false);
   const [checkingRole, setCheckingRole] = useState(false);
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     let mounted = true;
@@ -63,17 +66,18 @@ function AdminLayout() {
         return;
       }
       setCheckingRole(true);
-      const { data, error } = await supabase
+      const { data: adminRow, error } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", userId)
         .eq("role", "admin")
         .maybeSingle();
       if (!mounted) return;
-      if (error || !data) {
-        await supabase.auth.signOut();
+      if (error || !adminRow) {
+        // Not an admin — if signed in, send to /portal instead of forcing logout
         setAuthed(false);
-        toast.error("This account does not have admin access.");
+        toast.message("Redirecting to your client portal…");
+        navigate({ to: "/portal" });
       } else {
         setAuthed(true);
       }
@@ -88,7 +92,7 @@ function AdminLayout() {
       mounted = false;
       sub.subscription.unsubscribe();
     };
-  }, []);
+  }, [navigate]);
 
   if (!hydrated || checkingRole) {
     return <div className="min-h-screen bg-background" />;
@@ -217,6 +221,15 @@ function LoginScreen({ onSuccess }: { onSuccess: () => void }) {
     }
   };
 
+  const handleGoogle = async () => {
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin + "/admin",
+    });
+    if (result.error) {
+      toast.error(result.error.message ?? "Google sign-in failed");
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4 relative overflow-hidden">
       <div
@@ -264,6 +277,13 @@ function LoginScreen({ onSuccess }: { onSuccess: () => void }) {
             {submitting ? "Please wait…" : mode === "signin" ? "Sign In" : "Create admin account"}
           </Button>
         </form>
+        <div className="relative my-5">
+          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
+          <div className="relative flex justify-center text-xs"><span className="px-2 bg-[color:var(--surface-1)] text-[color:var(--text-muted)]">or</span></div>
+        </div>
+        <Button type="button" variant="outline" onClick={handleGoogle} className="w-full">
+          Continue with Google
+        </Button>
         <div className="mt-4 text-center text-xs text-[color:var(--text-muted)]">
           {mode === "signin" ? (
             <button type="button" onClick={() => setMode("signup")} className="hover:text-foreground underline-offset-4 hover:underline">

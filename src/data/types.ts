@@ -99,3 +99,11 @@ export interface ContactMessage {
   read: boolean;
   created_at: string;
 }
+
+export interface PortalMessage {
+  id: string;
+  customer_id: string;
+  message: string;
+  is_from_admin: boolean;
+  created_at: string;
+}

@@ -137,6 +137,30 @@ export type Database = {
         }
         Relationships: []
       }
+      portal_messages: {
+        Row: {
+          created_at: string
+          customer_id: string
+          id: string
+          is_from_admin: boolean
+          message: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          id?: string
+          is_from_admin?: boolean
+          message: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          id?: string
+          is_from_admin?: boolean
+          message?: string
+        }
+        Relationships: []
+      }
       process_steps: {
         Row: {
           created_at: string
@@ -338,6 +362,7 @@ export type Database = {
       testimonials: {
         Row: {
           created_at: string
+          customer_id: string | null
           flag: string
           id: string
           name: string
@@ -348,6 +373,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          customer_id?: string | null
           flag: string
           id?: string
           name: string
@@ -358,6 +384,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          customer_id?: string | null
           flag?: string
           id?: string
           name?: string
@@ -411,7 +438,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin"
+      app_role: "admin" | "customer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -539,7 +566,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin"],
+      app_role: ["admin", "customer"],
     },
   },
 } as const

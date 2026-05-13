@@ -542,6 +542,10 @@ export function Contact() {
     }
     toast.success("Thanks — we'll be in touch within 24 hours.");
     form.reset();
+    // Notify admins via edge function (not yet deployed — see /admin docs).
+    void supabase.functions.invoke("send-notification", {
+      body: { type: "contact_message", ...payload },
+    }).catch(() => { /* edge function not yet configured */ });
   };
 
   return (
