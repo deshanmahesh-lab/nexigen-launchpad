@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Pencil, Trash2, Plus } from "lucide-react";
+import { Pencil, Trash2, Plus, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,19 +33,29 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/lib/supabase";
-import { fetchTestimonials } from "@/lib/queries";
+import { fetchTestimonialsAll } from "@/lib/queries";
 import type { Testimonial } from "@/data/types";
 
 export const Route = createFileRoute("/admin/testimonials")({ component: TestimonialsAdmin });
 
 function TestimonialsAdmin() {
   const qc = useQueryClient();
-  const { data, isLoading } = useQuery({ queryKey: ["testimonials"], queryFn: fetchTestimonials });
+  const { data, isLoading } = useQuery({ queryKey: ["testimonials", "all"], queryFn: fetchTestimonialsAll });
   const [editing, setEditing] = useState<Testimonial | null>(null);
   const [open, setOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const refresh = () => qc.invalidateQueries({ queryKey: ["testimonials"] });
+
+  const drafts = (data ?? []).filter((t) => t.status === "draft");
+  const published = (data ?? []).filter((t) => t.status === "published");
+
+  const publishDraft = async (id: string) => {
+    const { error } = await supabase.from("testimonials").update({ status: "published" }).eq("id", id);
+    if (error) return toast.error("Failed to publish");
+    toast.success("Testimonial published");
+    refresh();
+  };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -91,6 +101,45 @@ function TestimonialsAdmin() {
         </Button>
       </div>
 
+      {drafts.length > 0 && (
+        <div className="rounded-xl glass overflow-hidden border border-primary/30">
+          <div className="px-4 py-3 border-b border-border bg-gradient-brand/10">
+            <h2 className="font-display font-semibold">Pending review ({drafts.length})</h2>
+            <p className="text-xs text-[color:var(--text-muted)]">Customer-submitted testimonials awaiting approval.</p>
+          </div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead className="hidden md:table-cell">Role</TableHead>
+                <TableHead className="hidden lg:table-cell">Quote</TableHead>
+                <TableHead className="w-32 text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {drafts.map((t) => (
+                <TableRow key={t.id}>
+                  <TableCell className="font-medium">{t.flag} {t.name}</TableCell>
+                  <TableCell className="hidden md:table-cell text-xs">{t.role}</TableCell>
+                  <TableCell className="hidden lg:table-cell text-xs max-w-md truncate">{t.quote}</TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="icon" title="Approve" onClick={() => publishDraft(t.id)}>
+                      <Check className="h-4 w-4 text-green-500" />
+                    </Button>
+                    <Button variant="ghost" size="icon" title="Edit" onClick={() => { setEditing(t); setOpen(true); }}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" title="Reject" onClick={() => setDeleteId(t.id)}>
+                      <X className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+
       <div className="rounded-xl glass overflow-hidden">
         <Table>
           <TableHeader>
@@ -104,8 +153,8 @@ function TestimonialsAdmin() {
           <TableBody>
             {isLoading ? (
               <TableRow><TableCell colSpan={4} className="text-center py-8 text-[color:var(--text-muted)]">Loading…</TableCell></TableRow>
-            ) : data?.length ? (
-              data.map((t) => (
+            ) : published.length ? (
+              published.map((t) => (
                 <TableRow key={t.id}>
                   <TableCell className="font-medium">{t.name}</TableCell>
                   <TableCell className="hidden md:table-cell text-xs">{t.role}</TableCell>
@@ -121,7 +170,7 @@ function TestimonialsAdmin() {
                 </TableRow>
               ))
             ) : (
-              <TableRow><TableCell colSpan={4} className="text-center py-8 text-[color:var(--text-muted)]">No testimonials yet.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={4} className="text-center py-8 text-[color:var(--text-muted)]">No published testimonials yet.</TableCell></TableRow>
             )}
           </TableBody>
         </Table>
