@@ -22,6 +22,7 @@ import { Route as AdminServicesRouteImport } from './routes/admin/services'
 import { Route as AdminProjectsRouteImport } from './routes/admin/projects'
 import { Route as AdminProcessRouteImport } from './routes/admin/process'
 import { Route as AdminMessagesRouteImport } from './routes/admin/messages'
+import { Route as AdminChatsRouteImport } from './routes/admin/chats'
 
 const PortalRoute = PortalRouteImport.update({
   id: '/portal',
@@ -88,11 +89,17 @@ const AdminMessagesRoute = AdminMessagesRouteImport.update({
   path: '/messages',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminChatsRoute = AdminChatsRouteImport.update({
+  id: '/chats',
+  path: '/chats',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/portal': typeof PortalRouteWithChildren
+  '/admin/chats': typeof AdminChatsRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/process': typeof AdminProcessRoute
   '/admin/projects': typeof AdminProjectsRoute
@@ -106,6 +113,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin/chats': typeof AdminChatsRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/process': typeof AdminProcessRoute
   '/admin/projects': typeof AdminProjectsRoute
@@ -122,6 +130,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/portal': typeof PortalRouteWithChildren
+  '/admin/chats': typeof AdminChatsRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/process': typeof AdminProcessRoute
   '/admin/projects': typeof AdminProjectsRoute
@@ -139,6 +148,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/portal'
+    | '/admin/chats'
     | '/admin/messages'
     | '/admin/process'
     | '/admin/projects'
@@ -152,6 +162,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin/chats'
     | '/admin/messages'
     | '/admin/process'
     | '/admin/projects'
@@ -167,6 +178,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/portal'
+    | '/admin/chats'
     | '/admin/messages'
     | '/admin/process'
     | '/admin/projects'
@@ -278,10 +290,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminMessagesRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/chats': {
+      id: '/admin/chats'
+      path: '/chats'
+      fullPath: '/admin/chats'
+      preLoaderRoute: typeof AdminChatsRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
 interface AdminRouteChildren {
+  AdminChatsRoute: typeof AdminChatsRoute
   AdminMessagesRoute: typeof AdminMessagesRoute
   AdminProcessRoute: typeof AdminProcessRoute
   AdminProjectsRoute: typeof AdminProjectsRoute
@@ -294,6 +314,7 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminChatsRoute: AdminChatsRoute,
   AdminMessagesRoute: AdminMessagesRoute,
   AdminProcessRoute: AdminProcessRoute,
   AdminProjectsRoute: AdminProjectsRoute,
