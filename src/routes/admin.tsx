@@ -221,6 +221,15 @@ function LoginScreen({ onSuccess }: { onSuccess: () => void }) {
     }
   };
 
+  const handleGoogle = async () => {
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin + "/admin",
+    });
+    if (result.error) {
+      toast.error(result.error.message ?? "Google sign-in failed");
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4 relative overflow-hidden">
       <div
@@ -268,6 +277,13 @@ function LoginScreen({ onSuccess }: { onSuccess: () => void }) {
             {submitting ? "Please wait…" : mode === "signin" ? "Sign In" : "Create admin account"}
           </Button>
         </form>
+        <div className="relative my-5">
+          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
+          <div className="relative flex justify-center text-xs"><span className="px-2 bg-[color:var(--surface-1)] text-[color:var(--text-muted)]">or</span></div>
+        </div>
+        <Button type="button" variant="outline" onClick={handleGoogle} className="w-full">
+          Continue with Google
+        </Button>
         <div className="mt-4 text-center text-xs text-[color:var(--text-muted)]">
           {mode === "signin" ? (
             <button type="button" onClick={() => setMode("signup")} className="hover:text-foreground underline-offset-4 hover:underline">
