@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -47,6 +48,7 @@ const NAV = [
   { to: "/admin/blog", label: "Blog Posts", icon: BookOpen },
   { to: "/admin/stats", label: "Stats", icon: BarChart3 },
   { to: "/admin/messages", label: "Messages", icon: Inbox },
+  { to: "/admin/chats", label: "Client Chats", icon: MessageSquareQuote },
 ] as const;
 
 function AdminLayout() {
@@ -54,6 +56,7 @@ function AdminLayout() {
   const [authed, setAuthed] = useState(false);
   const [checkingRole, setCheckingRole] = useState(false);
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     let mounted = true;
@@ -63,17 +66,18 @@ function AdminLayout() {
         return;
       }
       setCheckingRole(true);
-      const { data, error } = await supabase
+      const { data: adminRow, error } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", userId)
         .eq("role", "admin")
         .maybeSingle();
       if (!mounted) return;
-      if (error || !data) {
-        await supabase.auth.signOut();
+      if (error || !adminRow) {
+        // Not an admin — if signed in, send to /portal instead of forcing logout
         setAuthed(false);
-        toast.error("This account does not have admin access.");
+        toast.message("Redirecting to your client portal…");
+        navigate({ to: "/portal" });
       } else {
         setAuthed(true);
       }
@@ -88,7 +92,7 @@ function AdminLayout() {
       mounted = false;
       sub.subscription.unsubscribe();
     };
-  }, []);
+  }, [navigate]);
 
   if (!hydrated || checkingRole) {
     return <div className="min-h-screen bg-background" />;
