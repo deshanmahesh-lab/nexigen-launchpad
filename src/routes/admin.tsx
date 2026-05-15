@@ -61,47 +61,49 @@ const NAV = [
 function AdminLayout() {
   const [hydrated, setHydrated] = useState(false);
   const [authed, setAuthed] = useState(false);
-  const [checkingRole, setCheckingRole] = useState(false);
   const [open, setOpen] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     let mounted = true;
-    const check = async (userId: string | undefined) => {
+    // Passive session verification on mount/refresh only.
+    // Login navigation is handled inside LoginScreen.handleSubmit to avoid
+    // racing this effect.
+    (async () => {
+      const { data } = await supabase.auth.getSession();
+      const userId = data.session?.user?.id;
+      if (!mounted) return;
       if (!userId) {
-        if (mounted) { setAuthed(false); setHydrated(true); }
+        setAuthed(false);
+        setHydrated(true);
         return;
       }
-      setCheckingRole(true);
-      const { data: adminRow, error } = await supabase
+      const { data: adminRow } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", userId)
         .eq("role", "admin")
         .maybeSingle();
       if (!mounted) return;
-      if (error || !adminRow) {
-        // Not an admin — if signed in, send to /portal instead of forcing logout
-        setAuthed(false);
-        toast.message("Redirecting to your client portal…");
-        navigate({ to: "/portal" });
-      } else {
+      if (adminRow) {
         setAuthed(true);
+      } else {
+        await supabase.auth.signOut();
+        setAuthed(false);
+        toast.error("Access Denied: Admin privileges required");
       }
-      setCheckingRole(false);
       setHydrated(true);
-    };
-    const { data: sub } = supabase.auth.onAuthStateChange((_evt, session) => {
-      void check(session?.user?.id);
+    })();
+
+    const { data: sub } = supabase.auth.onAuthStateChange((evt) => {
+      if (evt === "SIGNED_OUT" && mounted) setAuthed(false);
     });
-    supabase.auth.getSession().then(({ data }) => check(data.session?.user?.id));
     return () => {
       mounted = false;
       sub.subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, []);
 
-  if (!hydrated || checkingRole) {
+  if (!hydrated) {
     return <div className="min-h-screen bg-background" />;
   }
 
@@ -206,25 +208,47 @@ function LoginScreen({ onSuccess }: { onSuccess: () => void }) {
     setSubmitting(true);
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: { emailRedirectTo: `${window.location.origin}/admin` },
         });
         if (error) throw error;
-        toast.success("Account created. Signing you in…");
+        const userId = data.user?.id;
+        if (!userId) {
+          toast.success("Account created. Check your email to confirm.");
+          return;
+        }
+        await verifyAdminAndProceed(userId);
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        toast.success("Welcome back");
+        const userId = data.user?.id;
+        if (!userId) throw new Error("Sign-in failed");
+        await verifyAdminAndProceed(userId);
       }
-      onSuccess();
-      navigate({ to: "/admin" });
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Authentication failed";
       toast.error(msg);
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const verifyAdminAndProceed = async (userId: string) => {
+    const { data: adminRow } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "admin")
+      .maybeSingle();
+    if (adminRow) {
+      toast.success("Welcome back");
+      onSuccess();
+      navigate({ to: "/admin" });
+    } else {
+      toast.error("Access Denied: Admin privileges required");
+      await supabase.auth.signOut();
     }
   };
 
