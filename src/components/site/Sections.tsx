@@ -466,9 +466,15 @@ export function Careers() {
                       {[r.department, r.type].filter(Boolean).join(" • ")}
                     </div>
                   </div>
-                  <a href={r.apply_link || "#"} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary group-hover:gap-2 transition-all">
-                    Apply Now <ArrowRight className="h-4 w-4" />
-                  </a>
+                  {r.apply_link && r.apply_link !== "#" ? (
+                    <a href={r.apply_link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary group-hover:gap-2 transition-all">
+                      Apply Now <ArrowRight className="h-4 w-4" />
+                    </a>
+                  ) : (
+                    <span className="inline-flex items-center text-xs px-3 py-1 rounded-full glass text-[color:var(--text-muted)]">
+                      Coming Soon
+                    </span>
+                  )}
                 </div>
               </Reveal>
             ))}
@@ -542,10 +548,6 @@ export function Contact() {
     }
     toast.success("Thanks — we'll be in touch within 24 hours.");
     form.reset();
-    // Notify admins via edge function (not yet deployed — see /admin docs).
-    void supabase.functions.invoke("send-notification", {
-      body: { type: "contact_message", ...payload },
-    }).catch(() => { /* edge function not yet configured */ });
   };
 
   return (
