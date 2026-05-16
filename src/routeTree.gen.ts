@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PortalRouteImport } from './routes/portal'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PortalIndexRouteImport } from './routes/portal/index'
@@ -21,12 +22,18 @@ import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
 import { Route as AdminServicesRouteImport } from './routes/admin/services'
 import { Route as AdminProjectsRouteImport } from './routes/admin/projects'
 import { Route as AdminProcessRouteImport } from './routes/admin/process'
+import { Route as AdminPerksRouteImport } from './routes/admin/perks'
 import { Route as AdminMessagesRouteImport } from './routes/admin/messages'
 import { Route as AdminChatsRouteImport } from './routes/admin/chats'
 
 const PortalRoute = PortalRouteImport.update({
   id: '/portal',
   path: '/portal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -84,6 +91,11 @@ const AdminProcessRoute = AdminProcessRouteImport.update({
   path: '/process',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminPerksRoute = AdminPerksRouteImport.update({
+  id: '/perks',
+  path: '/perks',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminMessagesRoute = AdminMessagesRouteImport.update({
   id: '/messages',
   path: '/messages',
@@ -98,9 +110,11 @@ const AdminChatsRoute = AdminChatsRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/login': typeof LoginRoute
   '/portal': typeof PortalRouteWithChildren
   '/admin/chats': typeof AdminChatsRoute
   '/admin/messages': typeof AdminMessagesRoute
+  '/admin/perks': typeof AdminPerksRoute
   '/admin/process': typeof AdminProcessRoute
   '/admin/projects': typeof AdminProjectsRoute
   '/admin/services': typeof AdminServicesRoute
@@ -113,8 +127,10 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
   '/admin/chats': typeof AdminChatsRoute
   '/admin/messages': typeof AdminMessagesRoute
+  '/admin/perks': typeof AdminPerksRoute
   '/admin/process': typeof AdminProcessRoute
   '/admin/projects': typeof AdminProjectsRoute
   '/admin/services': typeof AdminServicesRoute
@@ -129,9 +145,11 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/login': typeof LoginRoute
   '/portal': typeof PortalRouteWithChildren
   '/admin/chats': typeof AdminChatsRoute
   '/admin/messages': typeof AdminMessagesRoute
+  '/admin/perks': typeof AdminPerksRoute
   '/admin/process': typeof AdminProcessRoute
   '/admin/projects': typeof AdminProjectsRoute
   '/admin/services': typeof AdminServicesRoute
@@ -147,9 +165,11 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/login'
     | '/portal'
     | '/admin/chats'
     | '/admin/messages'
+    | '/admin/perks'
     | '/admin/process'
     | '/admin/projects'
     | '/admin/services'
@@ -162,8 +182,10 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/login'
     | '/admin/chats'
     | '/admin/messages'
+    | '/admin/perks'
     | '/admin/process'
     | '/admin/projects'
     | '/admin/services'
@@ -177,9 +199,11 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/login'
     | '/portal'
     | '/admin/chats'
     | '/admin/messages'
+    | '/admin/perks'
     | '/admin/process'
     | '/admin/projects'
     | '/admin/services'
@@ -194,6 +218,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
+  LoginRoute: typeof LoginRoute
   PortalRoute: typeof PortalRouteWithChildren
 }
 
@@ -204,6 +229,13 @@ declare module '@tanstack/react-router' {
       path: '/portal'
       fullPath: '/portal'
       preLoaderRoute: typeof PortalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -283,6 +315,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProcessRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/perks': {
+      id: '/admin/perks'
+      path: '/perks'
+      fullPath: '/admin/perks'
+      preLoaderRoute: typeof AdminPerksRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/messages': {
       id: '/admin/messages'
       path: '/messages'
@@ -303,6 +342,7 @@ declare module '@tanstack/react-router' {
 interface AdminRouteChildren {
   AdminChatsRoute: typeof AdminChatsRoute
   AdminMessagesRoute: typeof AdminMessagesRoute
+  AdminPerksRoute: typeof AdminPerksRoute
   AdminProcessRoute: typeof AdminProcessRoute
   AdminProjectsRoute: typeof AdminProjectsRoute
   AdminServicesRoute: typeof AdminServicesRoute
@@ -316,6 +356,7 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminChatsRoute: AdminChatsRoute,
   AdminMessagesRoute: AdminMessagesRoute,
+  AdminPerksRoute: AdminPerksRoute,
   AdminProcessRoute: AdminProcessRoute,
   AdminProjectsRoute: AdminProjectsRoute,
   AdminServicesRoute: AdminServicesRoute,
@@ -342,18 +383,9 @@ const PortalRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
+  LoginRoute: LoginRoute,
   PortalRoute: PortalRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

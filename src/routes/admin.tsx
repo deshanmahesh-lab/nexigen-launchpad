@@ -1,9 +1,6 @@
 import { createFileRoute, Outlet, Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState, type FormEvent } from "react";
-import { Card } from "@/components/ui/card";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   LayoutDashboard,
   Wrench,
@@ -23,7 +20,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -62,19 +58,16 @@ function AdminLayout() {
   const [hydrated, setHydrated] = useState(false);
   const [authed, setAuthed] = useState(false);
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     let mounted = true;
-    // Passive session verification on mount/refresh only.
-    // Login navigation is handled inside LoginScreen.handleSubmit to avoid
-    // racing this effect.
     (async () => {
       const { data } = await supabase.auth.getSession();
       const userId = data.session?.user?.id;
       if (!mounted) return;
       if (!userId) {
-        setAuthed(false);
-        setHydrated(true);
+        navigate({ to: "/login" });
         return;
       }
       const { data: adminRow } = await supabase
@@ -86,35 +79,34 @@ function AdminLayout() {
       if (!mounted) return;
       if (adminRow) {
         setAuthed(true);
+        setHydrated(true);
       } else {
         await supabase.auth.signOut();
-        setAuthed(false);
         toast.error("Access Denied: Admin privileges required");
+        navigate({ to: "/login" });
       }
-      setHydrated(true);
     })();
 
     const { data: sub } = supabase.auth.onAuthStateChange((evt) => {
-      if (evt === "SIGNED_OUT" && mounted) setAuthed(false);
+      if (evt === "SIGNED_OUT" && mounted) {
+        setAuthed(false);
+        navigate({ to: "/login" });
+      }
     });
     return () => {
       mounted = false;
       sub.subscription.unsubscribe();
     };
-  }, []);
+  }, [navigate]);
 
-  if (!hydrated) {
+  if (!hydrated || !authed) {
     return <div className="min-h-screen bg-background" />;
-  }
-
-  if (!authed) {
-    return <LoginScreen onSuccess={() => setAuthed(true)} />;
   }
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    setAuthed(false);
     toast.success("Signed out");
+    navigate({ to: "/login" });
   };
 
   return (
@@ -193,140 +185,5 @@ function NavItem({
       <Icon className="h-4 w-4" />
       {label}
     </Link>
-  );
-}
-
-function LoginScreen({ onSuccess }: { onSuccess: () => void }) {
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const navigate = useNavigate();
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-    try {
-      if (mode === "signup") {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { emailRedirectTo: `${window.location.origin}/admin` },
-        });
-        if (error) throw error;
-        const userId = data.user?.id;
-        if (!userId) {
-          toast.success("Account created. Check your email to confirm.");
-          return;
-        }
-        await verifyAdminAndProceed(userId);
-      } else {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        const userId = data.user?.id;
-        if (!userId) throw new Error("Sign-in failed");
-        await verifyAdminAndProceed(userId);
-      }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Authentication failed";
-      toast.error(msg);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const verifyAdminAndProceed = async (userId: string) => {
-    const { data: adminRow } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId)
-      .eq("role", "admin")
-      .maybeSingle();
-    if (adminRow) {
-      toast.success("Welcome back");
-      onSuccess();
-      navigate({ to: "/admin" });
-    } else {
-      toast.error("Access Denied: Admin privileges required");
-      await supabase.auth.signOut();
-    }
-  };
-
-  const handleGoogle = async () => {
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin + "/admin",
-    });
-    if (result.error) {
-      toast.error(result.error.message ?? "Google sign-in failed");
-    }
-  };
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4 relative overflow-hidden">
-      <div
-        className="absolute"
-        style={{ top: "-100px", left: "-100px", width: 500, height: 500, background: "rgba(124,196,232,0.18)", filter: "blur(120px)" }}
-      />
-      <div
-        className="absolute"
-        style={{ bottom: "-120px", right: "-120px", width: 500, height: 500, background: "rgba(139,110,196,0.22)", filter: "blur(110px)" }}
-      />
-      <Card className="relative w-full max-w-md p-8 glass border-border">
-        <div className="text-center mb-6">
-          <div className="font-display font-bold text-2xl text-gradient">Nexigen Admin</div>
-          <p className="mt-2 text-sm text-[color:var(--text-muted)]">
-            {mode === "signin" ? "Sign in to manage site content" : "Create the first admin account"}
-          </p>
-        </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
-              required
-              className="mt-1.5"
-            />
-          </div>
-          <div>
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete={mode === "signin" ? "current-password" : "new-password"}
-              minLength={mode === "signup" ? 8 : undefined}
-              required
-              className="mt-1.5"
-            />
-          </div>
-          <Button type="submit" disabled={submitting} className="w-full bg-gradient-brand hover:opacity-90">
-            {submitting ? "Please wait…" : mode === "signin" ? "Sign In" : "Create admin account"}
-          </Button>
-        </form>
-        <div className="relative my-5">
-          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
-          <div className="relative flex justify-center text-xs"><span className="px-2 bg-[color:var(--surface-1)] text-[color:var(--text-muted)]">or</span></div>
-        </div>
-        <Button type="button" variant="outline" onClick={handleGoogle} className="w-full">
-          Continue with Google
-        </Button>
-        <div className="mt-4 text-center text-xs text-[color:var(--text-muted)]">
-          {mode === "signin" ? (
-            <button type="button" onClick={() => setMode("signup")} className="hover:text-foreground underline-offset-4 hover:underline">
-              First time here? Create the admin account
-            </button>
-          ) : (
-            <button type="button" onClick={() => setMode("signin")} className="hover:text-foreground underline-offset-4 hover:underline">
-              Already have an account? Sign in
-            </button>
-          )}
-        </div>
-      </Card>
-    </div>
   );
 }

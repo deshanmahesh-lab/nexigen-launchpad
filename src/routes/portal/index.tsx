@@ -84,10 +84,6 @@ function ProjectChat() {
     setSending(false);
     if (error) { toast.error("Failed to send"); return; }
     setText("");
-    // Notification placeholder — see comment below
-    void supabase.functions.invoke("send-notification", {
-      body: { type: "portal_message", customer_id: userId, message: body },
-    }).catch(() => { /* edge function not deployed yet */ });
   };
 
   return (
