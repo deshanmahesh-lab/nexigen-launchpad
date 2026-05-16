@@ -103,9 +103,6 @@ function AdminChats() {
     setSending(false);
     if (error) { toast.error("Failed to send"); return; }
     setText("");
-    void supabase.functions.invoke("send-notification", {
-      body: { type: "portal_reply", customer_id: selected, message: body },
-    }).catch(() => { /* edge function not deployed yet */ });
     void loadConversations();
   };
 
